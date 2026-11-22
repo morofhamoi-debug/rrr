@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>DARK HOUSE — Basement</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080a0c;font-family:Inter,system-ui,sans-serif}canvas{display:block}
+#hud{position:fixed;inset:0;pointer-events:none;color:#d9dedf;text-shadow:0 2px 8px #000}
+#brand{position:absolute;top:22px;left:24px;font-size:11px;letter-spacing:.34em;color:#9da8a9}
+#brand b{display:block;margin-top:5px;font-size:17px;letter-spacing:.2em;color:#e4e8e7;font-weight:500}
+#objective{position:absolute;top:24px;right:24px;text-align:right;font-size:11px;letter-spacing:.13em;color:#aeb8b7}
+#cross{position:absolute;left:50%;top:50%;width:5px;height:5px;border:1px solid #dce4df;border-radius:50%;transform:translate(-50%,-50%);opacity:.7}
+#hint{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.15em;color:#aab2b0;white-space:nowrap}
+#vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 38%,rgba(0,0,0,.25) 75%,rgba(0,0,0,.68));}
+#mobile{display:none;position:absolute;bottom:35px;left:25px;width:116px;height:116px;border:1px solid #ffffff38;border-radius:50%;background:#111a1c55;pointer-events:auto;touch-action:none}
+#stick{position:absolute;width:48px;height:48px;left:33px;top:33px;border-radius:50%;background:#d7e0dc33;border:1px solid #ffffff55}
+#look{display:none;position:absolute;right:0;bottom:0;width:52%;height:58%;pointer-events:auto;touch-action:none}
+@media(pointer:coarse){#mobile,#look{display:block}#hint{bottom:18px;font-size:9px}}
+</style>
+</head>
+<body>
+<div id="hud"><div id="brand">DARK HOUSE<b>THE LOWER LEVEL</b></div><div id="objective">ЗОНА 01 / ПОДВАЛ<br>ИССЛЕДУЙ ПОМЕЩЕНИЕ</div><div id="cross"></div><div id="hint">W A S D — ДВИЖЕНИЕ &nbsp; · &nbsp; МЫШЬ — ОБЗОР &nbsp; · &nbsp; SHIFT — БЕГ</div><div id="vignette"></div><div id="mobile"><div id="stick"></div></div><div id="look"></div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
+
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x111719);scene.fog=new THREE.FogExp2(0x111719,.038);
+const camera=new THREE.PerspectiveCamera(76,innerWidth/innerHeight,.08,90);camera.position.set(0,1.68,5.6);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;document.body.appendChild(renderer.domElement);
+const controls=new PointerLockControls(camera,renderer.domElement);
+renderer.domElement.addEventListener('click',()=>{if(matchMedia('(pointer:fine)').matches)controls.lock()});
+const mat=(color,rough=.9,metal=0)=>new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
+function noiseTexture(base,scale=1){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle=base;x.fillRect(0,0,512,512);for(let i=0;i<27000;i++){let v=Math.random()*90;x.fillStyle='rgba('+v+','+v+','+v+','+(Math.random()*.12)+')';let s=Math.random()*3+1;x.fillRect(Math.random()*512,Math.random()*512,s,s)}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(scale,scale);t.colorSpace=THREE.SRGBColorSpace;return t}
+const concrete=mat(0x777b78);concrete.map=noiseTexture('#777b78',3);concrete.bumpMap=noiseTexture('#777b78',3);concrete.bumpScale=.075;
+const floorMat=mat(0x424947);floorMat.map=noiseTexture('#555b58',5);floorMat.bumpMap=noiseTexture('#555b58',5);floorMat.bumpScale=.11;
+const dark=mat(0x202829),rust=mat(0x654333,.72,.55),metal=mat(0x626b68,.35,.78),wood=mat(0x49382b),black=mat(0x111718);
+function box(w,h,d,m,x,y,z,sh=true){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=sh;o.receiveShadow=true;scene.add(o);return o}
+function cyl(r1,r2,h,m,x,y,z,seg=16){const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;scene.add(o);return o}
+// Room shell: 12 x 9 m, 3.6 m high
+box(12,.28,9,floorMat,0,-.16,0);box(12,.25,9,dark,0,3.58,0);
+box(12,3.6,.3,concrete,0,1.65,-4.5);box(12,3.6,.3,concrete,0,1.65,4.5);
+box(.3,3.6,9,concrete,-6,1.65,0);box(.3,3.6,9,concrete,6,1.65,0);
+// Concrete wall seams, poured panels and damp streaks
+for(let z of [-4.32,4.32])for(let x=-4.5;x<=4.5;x+=3){box(.035,3.45,.012,mat(0x555b59),x,1.65,z,false);box(2.9,.025,.018,mat(0x555b59),x,2.65,z,false)}
+for(let x of [-5.82,5.82])for(let z=-3;z<=3;z+=3)box(.012,3.45,.035,mat(0x555b59),x,1.65,z,false);
+const damp=new THREE.MeshStandardMaterial({color:0x293c39,transparent:true,opacity:.28,roughness:.4});
+for(let i=0;i<24;i++){let side=i%2? -4.33:4.33;let stain=new THREE.Mesh(new THREE.PlaneGeometry(.18+Math.random()*.7,.5+Math.random()*1.5),damp);stain.position.set(-5.3+Math.random()*10.6,Math.random()*1.5+.3,side);scene.add(stain)}
+// Floor cracks and shallow dark damp patches
+for(let i=0;i<26;i++){let p=new THREE.Mesh(new THREE.CircleGeometry(.15+Math.random()*.5,18),new THREE.MeshStandardMaterial({color:0x172322,roughness:.18,metalness:.25,transparent:true,opacity:.35}));p.rotation.x=-Math.PI/2;p.scale.y=.35+Math.random();p.position.set((Math.random()-.5)*10,-.008,(Math.random()-.5)*7);scene.add(p)}
+// Structural columns
+for(let x of [-3.7,3.7]){box(.42,3.55,.42,concrete,x,1.62,-.5);box(.55,.12,.55,mat(0x555a57),x,3.38,-.5)}
+// Ceiling beams
+for(let z of [-3,0,3])box(12,.22,.28,mat(0x3a4140),0,3.35,z);
+// Pipe network, elbows and clamps
+function pipe(a,b,r,m){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),v=B.clone().sub(A);const o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,v.length(),16),m);o.position.copy(A).add(B).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());o.castShadow=true;o.receiveShadow=true;scene.add(o);return o}
+pipe([-5.4,3.12,-3.8],[5.4,3.12,-3.8],.075,rust);
+pipe([-5.4,2.86,-3.55],[5.4,2.86,-3.55],.045,metal);
+pipe([4.9,3.12,-3.8],[4.9,.35,-3.8],.075,rust);
+pipe([-5.4,2.9,3.7],[1.8,2.9,3.7],.055,metal);
+for(let x=-4.8;x<5;x+=1.2){cyl(.095,.095,.08,metal,x,3.12,-3.8,20).rotation.z=Math.PI/2;box(.08,.28,.12,metal,x,3.34,-3.8)}
+// Cable trays and hanging wires
+box(.22,.08,8,black,-4.9,3.18,0);
+for(let z=-3.5;z<3.6;z+=.42)box(.3,.025,.035,metal,-4.9,3.13,z,false);
+const wireMat=mat(0x171b1a);
+function cable(points){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,40,.018,6,false),wireMat);scene.add(mesh)}
+cable([[-4.8,3.13,-3.5],[-3.5,2.8,-2.8],[-2.5,2.75,-1.8],[-1.4,3.12,-1]]);
+cable([[3.5,3.13,-3.8],[3.2,2.7,-2.8],[3.8,2.4,-2.2],[4.8,2.9,-1.5]]);
+// Industrial lights with warm pools and slight flicker
+const bulbs=[];
+function lamp(x,z,intensity=85){box(.8,.08,.28,black,x,3.37,z);box(.66,.035,.18,mat(0xb8b29b,.3),x,3.31,z,false);const light=new THREE.PointLight(0xffd6a0,intensity,8,2);light.position.set(x,3.15,z);light.castShadow=true;light.shadow.mapSize.set(512,512);light.shadow.bias=-.001;scene.add(light);bulbs.push({light,base:intensity,phase:Math.random()*8})}
+lamp(-2.5,-1.6,58);lamp(2.2,1.4,42);lamp(-4,3.1,25);
+// Staircase descending into the room
+for(let i=0;i<9;i++){const z=3.5-i*.38,y=.12+i*.19;box(1.55,.2,.42,mat(0x555b58),-4.7,y,z);box(1.58,.035,.44,mat(0x777b75),-4.7,y+.11,z,false)}
+pipe([-5.45,.25,3.6],[-5.45,1.9,.2],.035,metal);pipe([-3.95,.25,3.6],[-3.95,1.9,.2],.035,metal);
+// Shelving, crates, water heater, workbench
+for(let y of [.55,1.65,2.65]){box(1.8,.07,.55,metal,4.65,y,-2.8);for(let x of [3.8,5.5])box(.06,2.8,.06,metal,x,1.5,-2.8)}
+for(let i=0;i<4;i++){const x=3.9+(i%2)*.78,z=-2.45+Math.floor(i/2)*.62;const c=box(.65,.58,.58,wood,x,.32,z);box(.67,.035,.6,mat(0x594431),x,.62,z,false)}
+box(2.3,.12,.9,wood,2.9,.95,2.5);for(let x of [2,3.8])for(let z of [2.2,2.8])box(.09,.9,.09,metal,x,.45,z);
+cyl(.48,.48,1.55,mat(0x707b78,.4,.65),-2.8,.78,-2.5,32);cyl(.5,.5,.08,metal,-2.8,1.58,-2.5,32);
+pipe([-2.8,1.6,-2.5],[-2.8,2.3,-2.5],.055,metal);
+// Wall-mounted electrical cabinet and warning details
+box(.75,1.1,.22,mat(0x343c3b,.55,.5),5.7,1.7,-.7);box(.59,.78,.035,black,5.7,1.72,-.57);
+for(let i=0;i<3;i++){const led=new THREE.Mesh(new THREE.SphereGeometry(.035,12,8),new THREE.MeshBasicMaterial({color:[0x9c2f20,0x8b8b52,0x355b43][i]}));led.position.set(5.52+i*.17,1.95,-.53);scene.add(led)}
+// Debris, small stones and scattered objects
+for(let i=0;i<85;i++){const g=new THREE.DodecahedronGeometry(.025+Math.random()*.07,0);const o=new THREE.Mesh(g,mat(0x555a55));o.position.set((Math.random()-.5)*10,.015,(Math.random()-.5)*7.5);o.rotation.set(Math.random()*3,Math.random()*3,Math.random()*3);o.castShadow=true;scene.add(o)}
+// A narrow drainage channel and grate
+box(.22,.035,7,black,0,.015,4.05);for(let z=-3.3;z<3.4;z+=.22)box(.25,.025,.035,metal,0,.04,z,false);
+// Ambient illumination: dark but legible, no crushed blacks
+scene.add(new THREE.HemisphereLight(0x82969a,0x202321,.62));
+const fill=new THREE.DirectionalLight(0x9aa8a6,.42);fill.position.set(-3,7,5);scene.add(fill);
+// Movement + mobile touch look
+const keys={};addEventListener('keydown',e=>keys[e.code]=true);addEventListener('keyup',e=>keys[e.code]=false);
+let joy={x:0,y:0},lookTouch=null;const pad=document.querySelector('#mobile'),stick=document.querySelector('#stick'),look=document.querySelector('#look');
+pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);moveJoy(e)});pad.addEventListener('pointermove',e=>{if(e.buttons)moveJoy(e)});pad.addEventListener('pointerup',()=>{joy={x:0,y:0};stick.style.transform='translate(0,0)'});
+function moveJoy(e){const r=pad.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy)||1;joy.x=dx/Math.max(48,l);joy.y=dy/Math.max(48,l);stick.style.transform=`translate(${joy.x*31}px,${joy.y*31}px)`}
+look.addEventListener('pointerdown',e=>{look.setPointerCapture(e.pointerId);lookTouch={x:e.clientX,y:e.clientY}});look.addEventListener('pointermove',e=>{if(!lookTouch)return;const dx=e.clientX-lookTouch.x,dy=e.clientY-lookTouch.y;camera.rotation.order='YXZ';camera.rotation.y-=dx*.004;camera.rotation.x-=dy*.004;camera.rotation.x=Math.max(-1.35,Math.min(1.35,camera.rotation.x));lookTouch={x:e.clientX,y:e.clientY}});look.addEventListener('pointerup',()=>lookTouch=null);
+const clock=new THREE.Clock(),velocity=new THREE.Vector3(),direction=new THREE.Vector3();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04),t=clock.elapsedTime;
+bulbs.forEach(b=>{const flick=Math.random()>.996?.22:1;b.light.intensity=b.base*flick*(.97+Math.sin(t*7+b.phase)*.025)});
+let forward=Number(keys.KeyW||keys.ArrowUp)-Number(keys.KeyS||keys.ArrowDown)-joy.y;
+let side=Number(keys.KeyD||keys.ArrowRight)-Number(keys.KeyA||keys.ArrowLeft)+joy.x;
+direction.set(side,0,forward);if(direction.length()>1)direction.normalize();const speed=(keys.ShiftLeft||keys.ShiftRight)?4.1:2.45;
+const angle=camera.rotation.y;const dx=(direction.x*Math.cos(angle)-direction.z*Math.sin(angle))*speed*dt;const dz=(direction.x*Math.sin(angle)+direction.z*Math.cos(angle))*speed*dt;
+camera.position.x=THREE.MathUtils.clamp(camera.position.x+dx,-5.45,5.45);camera.position.z=THREE.MathUtils.clamp(camera.position.z+dz,-4.05,4.05);
+camera.position.y=1.68+Math.sin(t*(keys.ShiftLeft?13:8))*.012*(Math.abs(forward)+Math.abs(side));
+renderer.render(scene,camera)}
+animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7))});
+</script>
+</body></html>
