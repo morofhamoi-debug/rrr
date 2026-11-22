@@ -14,7 +14,7 @@ The service-role key is a secret. Add it only to Render environment variables. N
 ## 2. Telegram bot
 
 1. Create a bot with @BotFather and copy its token.
-2. Set the bot username without @.
+2. No bot username variable is needed: the server reads it automatically from Telegram.
 3. Add the bot as an administrator to your Telegram channel and grant permission to post messages.
 4. Find your numeric Telegram user ID and use it as `ADMIN_IDS`. Multiple admins can be comma-separated.
 
@@ -27,15 +27,13 @@ The service-role key is a secret. Add it only to Render environment variables. N
 5. Add the environment variables listed below.
 6. Deploy. The server automatically registers the Telegram webhook using `RENDER_EXTERNAL_URL`.
 
-Required Render variables:
-- `BOT_TOKEN`
-- `BOT_USERNAME`
-- `WEBAPP_URL` — the public HTTPS URL of this Render service
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `ADMIN_IDS` — numeric Telegram ID(s), comma-separated
-- `DEFAULT_CHANNEL` — optional, e.g. `@my_channel`
-- `WEBHOOK_SECRET` — optional; Render blueprint generates one
+Enter only these four variables manually in Render:
+- `BOT_TOKEN` — token from @BotFather
+- `SUPABASE_URL` — Supabase Project URL
+- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service_role / secret key
+- `ADMIN_IDS` — your numeric Telegram ID; multiple IDs can be comma-separated
+
+Render supplies `RENDER_EXTERNAL_URL` automatically. The server gets the bot username directly from Telegram. The Blueprint generates `WEBHOOK_SECRET` automatically; you do not need to enter it. The channel for each giveaway is entered in the admin panel.
 
 After deployment, open `https://YOUR-SERVICE.onrender.com/health`; it should return `{"ok":true,"service":"KHAMOI"}`.
 
