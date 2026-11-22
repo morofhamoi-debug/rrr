@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: khamoi
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: BOT_TOKEN
+        sync: false
+      - key: BOT_USERNAME
+        sync: false
+      - key: WEBAPP_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: DEFAULT_CHANNEL
+        sync: false
+      - key: WEBHOOK_SECRET
+        generateValue: true
