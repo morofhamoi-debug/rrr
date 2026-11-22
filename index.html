@@ -21,6 +21,9 @@
 </head>
 <body>
 <div id="hud"><div id="brand">DARK HOUSE<b>THE LOWER LEVEL</b></div><div id="objective">ЗОНА 01 / ПОДВАЛ<br>ИССЛЕДУЙ ПОМЕЩЕНИЕ</div><div id="cross"></div><div id="hint">W A S D — ДВИЖЕНИЕ &nbsp; · &nbsp; МЫШЬ — ОБЗОР &nbsp; · &nbsp; SHIFT — БЕГ</div><div id="vignette"></div><div id="mobile"><div id="stick"></div></div><div id="look"></div></div>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+</script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
@@ -71,8 +74,8 @@ cable([[-4.8,3.13,-3.5],[-3.5,2.8,-2.8],[-2.5,2.75,-1.8],[-1.4,3.12,-1]]);
 cable([[3.5,3.13,-3.8],[3.2,2.7,-2.8],[3.8,2.4,-2.2],[4.8,2.9,-1.5]]);
 // Industrial lights with warm pools and slight flicker
 const bulbs=[];
-function lamp(x,z,intensity=85){box(.8,.08,.28,black,x,3.37,z);box(.66,.035,.18,mat(0xb8b29b,.3),x,3.31,z,false);const light=new THREE.PointLight(0xffd6a0,intensity,8,2);light.position.set(x,3.15,z);light.castShadow=true;light.shadow.mapSize.set(512,512);light.shadow.bias=-.001;scene.add(light);bulbs.push({light,base:intensity,phase:Math.random()*8})}
-lamp(-2.5,-1.6,58);lamp(2.2,1.4,42);lamp(-4,3.1,25);
+function lamp(x,z,intensity=85){box(.8,.08,.28,black,x,3.37,z);const lens=new THREE.MeshStandardMaterial({color:0x9b927b,roughness:.35,emissive:0xffc77d,emissiveIntensity:.32});box(.66,.035,.18,lens,x,3.31,z,false);const light=new THREE.PointLight(0xffd6a0,intensity,9,2);light.position.set(x,3.15,z);light.castShadow=true;light.shadow.mapSize.set(512,512);light.shadow.bias=-.001;scene.add(light);bulbs.push({light,base:intensity,phase:Math.random()*8})}
+lamp(-2.5,-1.6,24);lamp(2.2,1.4,17);lamp(-4,3.1,11);
 // Staircase descending into the room
 for(let i=0;i<9;i++){const z=3.5-i*.38,y=.12+i*.19;box(1.55,.2,.42,mat(0x555b58),-4.7,y,z);box(1.58,.035,.44,mat(0x777b75),-4.7,y+.11,z,false)}
 pipe([-5.45,.25,3.6],[-5.45,1.9,.2],.035,metal);pipe([-3.95,.25,3.6],[-3.95,1.9,.2],.035,metal);
@@ -90,8 +93,8 @@ for(let i=0;i<85;i++){const g=new THREE.DodecahedronGeometry(.025+Math.random()*
 // A narrow drainage channel and grate
 box(.22,.035,7,black,0,.015,4.05);for(let z=-3.3;z<3.4;z+=.22)box(.25,.025,.035,metal,0,.04,z,false);
 // Ambient illumination: dark but legible, no crushed blacks
-scene.add(new THREE.HemisphereLight(0x82969a,0x202321,.62));
-const fill=new THREE.DirectionalLight(0x9aa8a6,.42);fill.position.set(-3,7,5);scene.add(fill);
+scene.add(new THREE.HemisphereLight(0x82969a,0x202321,.24));
+const fill=new THREE.DirectionalLight(0x9aa8a6,.13);fill.position.set(-3,7,5);scene.add(fill);
 // Movement + mobile touch look
 const keys={};addEventListener('keydown',e=>keys[e.code]=true);addEventListener('keyup',e=>keys[e.code]=false);
 let joy={x:0,y:0},lookTouch=null;const pad=document.querySelector('#mobile'),stick=document.querySelector('#stick'),look=document.querySelector('#look');
