@@ -55,6 +55,7 @@ function verifyInitData(initData) {
   if (!rawUser) throw new Error("Telegram не передал профиль пользователя.");
   const user = JSON.parse(rawUser);
   if (!user.id) throw new Error("Не найден Telegram ID.");
+  user.start_param = params.get("start_param") || "";
   return user;
 }
 
@@ -193,7 +194,7 @@ app.get("/health", (_req, res) => res.json({ ok: true, service: "KHAMOI" }));
 app.post("/api/auth", async (req, res) => {
   try {
     const tgUser = verifyInitData(req.body?.initData);
-    const startParam = req.body?.startParam || "";
+    const startParam = tgUser.start_param || "";
     const ref = String(startParam).startsWith("ref_") ? String(startParam).slice(4) : "";
     const user = await registerUser(tgUser, ref);
     const profile = await getProfile(user.id);
