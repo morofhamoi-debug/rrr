@@ -15,7 +15,7 @@ The service-role key is a secret. Add it only to Render environment variables. N
 
 1. Create a bot with @BotFather and copy its token.
 2. No bot username variable is needed: the server reads it automatically from Telegram.
-3. Add the bot as an administrator to your Telegram channel and grant permission to post messages.
+3. Add the bot as an administrator to the main channel `@khamoi` and grant **Invite Users** and **Post Messages** permissions. Add it as an administrator to every other channel where giveaways should be published. The bot records channels when Telegram reports an admin-status change; for channels where it was already an administrator before deployment, remove and re-add it (or toggle its admin status) once.
 4. Find your numeric Telegram user ID and use it as `ADMIN_IDS`. Multiple admins can be comma-separated.
 
 ## 3. Render
@@ -33,7 +33,7 @@ Enter only these four variables manually in Render:
 - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service_role / secret key
 - `ADMIN_IDS` — your numeric Telegram ID; multiple IDs can be comma-separated
 
-Render supplies `RENDER_EXTERNAL_URL` automatically. The server gets the bot username directly from Telegram. The Blueprint generates `WEBHOOK_SECRET` automatically; you do not need to enter it. The channel for each giveaway is entered in the admin panel.
+Render supplies `RENDER_EXTERNAL_URL` automatically. The server gets the bot username directly from Telegram. The Blueprint generates `WEBHOOK_SECRET` automatically; you do not need to enter it. The main referral channel defaults to `@khamoi`. Set `MAIN_CHANNEL` in Render only if you later change it.
 
 After deployment, open `https://YOUR-SERVICE.onrender.com/health`; it should return `{"ok":true,"service":"KHAMOI"}`.
 
@@ -43,8 +43,10 @@ In @BotFather configure the bot's Mini App / Web App URL to the same Render HTTP
 
 ## Important behaviour
 
-- Users are registered from the Telegram `/start` deep link and validated Mini App init data.
-- A referral is counted once, only when a new Telegram user starts with a valid existing inviter's link. Self-referrals are rejected.
+- Users are registered from `/start` or when they join a tracked channel.
+- Each user receives a personal Telegram channel invite link for `@khamoi`.
+- A referral is counted once only after Telegram confirms that a new user joined through that exact invite link. Opening the link or starting the bot alone does not count. Self-referrals are rejected.
+- The bot tracks channels where it is an administrator and publishes new giveaways and results to all tracked active channels.
 - The leaderboard counts confirmed referrals.
 - The admin panel is available only to Telegram IDs listed in `ADMIN_IDS`.
 - Giveaways are stored in Supabase and published to the configured channel if the bot has posting permission.
@@ -52,6 +54,6 @@ In @BotFather configure the bot's Mini App / Web App URL to the same Render HTTP
 
 ## Limitations to understand
 
-The current winner rule is **the participant with the most confirmed referrals**, as agreed for this project; it is not a random draw. If multiple users tie, the user with the lexicographically smaller Telegram ID wins, so the result is deterministic. For a fair random draw or additional anti-fraud checks, implement and publish those rules before launching a prize campaign.
+The current winner rule is **the participant with the most confirmed channel referrals**; it is not a random draw. If multiple users tie, the user with the lexicographically smaller Telegram ID wins, so the result is deterministic. For a fair random draw or additional anti-fraud checks, implement and publish those rules before launching a prize campaign.
 
 Render free services may sleep when idle; scheduled checks run only while the service is running. Use an always-on paid instance for reliable deadline execution. Back up your Supabase database and never share bot or service-role credentials.
