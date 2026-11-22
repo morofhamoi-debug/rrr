@@ -56,3 +56,14 @@ alter table public.referrals enable row level security;
 alter table public.giveaways enable row level security;
 
 -- No public policies are created intentionally. All data access goes through the trusted backend.
+
+
+-- Restrict direct access to the aggregate view as well.
+revoke all on public.users from anon, authenticated;
+revoke all on public.referrals from anon, authenticated;
+revoke all on public.giveaways from anon, authenticated;
+revoke all on public.referral_totals from anon, authenticated;
+grant select, insert, update, delete on public.users to service_role;
+grant select, insert, update, delete on public.referrals to service_role;
+grant select, insert, update, delete on public.giveaways to service_role;
+grant select on public.referral_totals to service_role;
