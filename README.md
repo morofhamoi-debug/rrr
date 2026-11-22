@@ -54,6 +54,6 @@ In @BotFather configure the bot's Mini App / Web App URL to the same Render HTTP
 
 ## Limitations to understand
 
-The current winner rule is **the participant with the most confirmed referrals**, as agreed for this project; it is not a random draw. If multiple users tie, the first row returned by the database wins. For a fair random draw or additional anti-fraud checks, implement and publish those rules before launching a prize campaign.
+The current winner rule is **the participant with the most confirmed referrals**, as agreed for this project; it is not a random draw. If multiple users tie, the user with the lexicographically smaller Telegram ID wins, so the result is deterministic. For a fair random draw or additional anti-fraud checks, implement and publish those rules before launching a prize campaign.
 
 Render free services may sleep when idle; scheduled checks run only while the service is running. Use an always-on paid instance for reliable deadline execution. Back up your Supabase database and never share bot or service-role credentials.
