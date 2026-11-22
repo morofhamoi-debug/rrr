@@ -19,8 +19,10 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 });
 const BOT_TOKEN = process.env.BOT_TOKEN;
 let BOT_USERNAME = "";
+let BOT_ID = null;
 const BOT_API = "https://api.telegram.org/bot" + BOT_TOKEN;
 const WEBAPP_URL = (process.env.RENDER_EXTERNAL_URL || "").replace(/\/$/, "");
+const MAIN_CHANNEL = process.env.MAIN_CHANNEL || "@khamoi";
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || crypto.randomBytes(32).toString("hex");
 const ADMIN_IDS = new Set(process.env.ADMIN_IDS.split(",").map(x => x.trim()).filter(Boolean));
 
@@ -54,33 +56,18 @@ function verifyInitData(initData) {
   if (!rawUser) throw new Error("Telegram не передал профиль пользователя.");
   const user = JSON.parse(rawUser);
   if (!user.id) throw new Error("Не найден Telegram ID.");
-  user.start_param = params.get("start_param") || "";
   return user;
 }
 
-async function registerUser(tgUser, refParam = "") {
+async function registerUser(tgUser) {
   const id = String(tgUser.id);
-  const { data: existing, error: findError } = await supabase.from("users").select("id").eq("id", id).maybeSingle();
-  if (findError) throw findError;
-  let inviter = null;
-  if (!existing && /^\d+$/.test(String(refParam)) && String(refParam) !== id) {
-    const { data: inviterRow, error } = await supabase.from("users").select("id").eq("id", String(refParam)).maybeSingle();
-    if (error) throw error;
-    if (inviterRow) inviter = String(refParam);
-  }
-  const { error: upsertError } = await supabase.from("users").upsert({
+  const { error } = await supabase.from("users").upsert({
     id,
     username: tgUser.username || null,
     first_name: tgUser.first_name || "Участник",
-    last_name: tgUser.last_name || null,
-    ...(existing ? {} : { referred_by: inviter })
+    last_name: tgUser.last_name || null
   }, { onConflict: "id" });
-  if (upsertError) throw upsertError;
-
-  if (!existing && inviter) {
-    const { error } = await supabase.from("referrals").insert({ inviter_id: inviter, referred_id: id });
-    if (error && error.code !== "23505") throw error;
-  }
+  if (error) throw error;
   return {
     id,
     username: tgUser.username || null,
@@ -90,10 +77,28 @@ async function registerUser(tgUser, refParam = "") {
   };
 }
 
+async function ensureReferralLink(userId) {
+  const id = String(userId);
+  const { data: user, error } = await supabase.from("users")
+    .select("channel_invite_link").eq("id", id).single();
+  if (error) throw error;
+  if (user.channel_invite_link) return user.channel_invite_link;
+
+  const invite = await telegram("createChatInviteLink", {
+    chat_id: MAIN_CHANNEL,
+    name: ("KHAMOI " + id).slice(0, 32)
+  });
+  const { error: updateError } = await supabase.from("users")
+    .update({ channel_invite_link: invite.invite_link }).eq("id", id);
+  if (updateError) throw updateError;
+  return invite.invite_link;
+}
+
 async function leaderboard(period = "all") {
   if (period === "all") {
     const { data, error } = await supabase.from("referral_totals")
       .select("user_id, first_name, username, referrals_count")
+      .gt("referrals_count", 0)
       .order("referrals_count", { ascending: false }).limit(100);
     if (error) throw error;
     return (data || []).map((x, i) => ({ ...x, rank: i + 1 }));
@@ -112,7 +117,7 @@ async function leaderboard(period = "all") {
   return (users || []).map(u => ({
     user_id: u.id, first_name: u.first_name, username: u.username,
     referrals_count: counts.get(u.id) || 0
-  })).sort((a, b) => b.referrals_count - a.referrals_count)
+  })).filter(x => x.referrals_count > 0).sort((a, b) => b.referrals_count - a.referrals_count)
     .slice(0, 100).map((x, i) => ({ ...x, rank: i + 1 }));
 }
 
@@ -125,12 +130,93 @@ async function getProfile(id) {
   if (countError) throw countError;
   const board = await leaderboard("all");
   const rank = board.find(x => x.user_id === id)?.rank || null;
-  return {
-    ...user,
-    referrals_count: count || 0,
-    rank,
-    referral_link: "https://t.me/" + BOT_USERNAME + "?start=ref_" + id
+  let referralLink = null;
+  try { referralLink = await ensureReferralLink(id); }
+  catch (e) { console.error("Referral link creation failed:", e.message); }
+  return { ...user, referrals_count: count || 0, rank, referral_link: referralLink };
+}
+
+function isActiveMember(member) {
+  if (!member) return false;
+  return ["member", "administrator", "creator"].includes(member.status) ||
+    (member.status === "restricted" && member.is_member === true);
+}
+
+async function recordChannelJoin(update) {
+  const joined = update.new_chat_member?.user;
+  const inviteLink = update.invite_link?.invite_link;
+  if (!joined || !inviteLink || !isActiveMember(update.new_chat_member)) return;
+  if (isActiveMember(update.old_chat_member)) return;
+
+  await registerUser(joined);
+  const { data: inviter, error } = await supabase.from("users")
+    .select("id").eq("channel_invite_link", inviteLink).maybeSingle();
+  if (error) throw error;
+  if (!inviter || String(inviter.id) === String(joined.id)) return;
+
+  const { error: insertError } = await supabase.from("referrals").insert({
+    inviter_id: String(inviter.id),
+    referred_id: String(joined.id)
+  });
+  if (insertError && insertError.code !== "23505") throw insertError;
+  if (!insertError) {
+    await supabase.from("users").update({ referred_by: String(inviter.id) })
+      .eq("id", String(joined.id)).is("referred_by", null);
+    console.log("Confirmed referral:", inviter.id, "->", joined.id);
+  }
+}
+
+async function saveBotChannel(chat, active) {
+  if (!chat || chat.type !== "channel") return;
+  const values = {
+    chat_id: String(chat.id),
+    title: chat.title || chat.username || "Telegram-канал",
+    username: chat.username || null,
+    is_active: active,
+    updated_at: new Date().toISOString()
   };
+  const { error } = await supabase.from("bot_channels").upsert(values, { onConflict: "chat_id" });
+  if (error) throw error;
+}
+
+async function syncMainChannel() {
+  try {
+    const chat = await telegram("getChat", { chat_id: MAIN_CHANNEL });
+    const member = await telegram("getChatMember", { chat_id: chat.id, user_id: BOT_ID });
+    await saveBotChannel(chat, ["administrator", "creator"].includes(member.status));
+    if (!["administrator", "creator"].includes(member.status)) {
+      console.warn("Bot is not an administrator in", MAIN_CHANNEL);
+    }
+  } catch (e) {
+    console.error("Main channel sync failed:", e.message);
+  }
+}
+
+async function activeChannels() {
+  const { data, error } = await supabase.from("bot_channels")
+    .select("chat_id,title").eq("is_active", true);
+  if (error) throw error;
+  return data || [];
+}
+
+async function publishToAllChannels(text, keyboard = null) {
+  const channels = await activeChannels();
+  const sent = [];
+  const failed = [];
+  for (const channel of channels) {
+    try {
+      const result = await telegram("sendMessage", {
+        chat_id: channel.chat_id,
+        text,
+        ...(keyboard ? { reply_markup: keyboard } : {})
+      });
+      sent.push({ chat_id: channel.chat_id, message_id: result.message_id });
+    } catch (e) {
+      failed.push({ chat_id: channel.chat_id, error: e.message });
+      console.error("Channel publication failed:", channel.chat_id, e.message);
+    }
+  }
+  return { sent, failed };
 }
 
 async function closeGiveaway(id) {
@@ -140,9 +226,10 @@ async function closeGiveaway(id) {
 
   const { data: top, error: topError } = await supabase.from("referral_totals")
     .select("user_id, first_name, username, referrals_count")
+    .gt("referrals_count", 0)
     .order("referrals_count", { ascending: false }).order("user_id", { ascending: true }).limit(1);
   if (topError) throw topError;
-  const winner = top && top.length && top[0].referrals_count > 0 ? top[0] : null;
+  const winner = top && top.length ? top[0] : null;
 
   const { data: updated, error: updateError } = await supabase.from("giveaways").update({
     status: "finished",
@@ -152,29 +239,26 @@ async function closeGiveaway(id) {
   }).eq("id", id).eq("status", "active").select().single();
   if (updateError) throw updateError;
 
-  if (draw.channel) {
-    const message = winner
-      ? "🏆 Розыгрыш завершён!\n" + draw.title + "\nПобедитель: " + (updated.winner_name || winner.user_id) + "\nПриз: " + draw.prize + " ⭐"
-      : "Розыгрыш завершён: " + draw.title + ". Подтверждённых приглашений пока нет.";
-    try { await telegram("sendMessage", { chat_id: draw.channel, text: message }); }
-    catch (e) { console.error("Could not post result to channel:", e.message); }
-  }
+  const message = winner
+    ? "🏆 Розыгрыш завершён!\n" + draw.title + "\nПобедитель: " + (updated.winner_name || winner.user_id) + "\nПриз: " + draw.prize + " ⭐"
+    : "Розыгрыш завершён: " + draw.title + ". Подтверждённых приглашений пока нет.";
+  await publishToAllChannels(message);
   return updated;
 }
 
 async function publishGiveaway(draw) {
-  if (!draw.channel) return;
   const text = "🎁 " + draw.title + "\n\nПриз: " + draw.prize + " ⭐\nОкончание: " +
     new Date(draw.ends_at).toLocaleString("ru-RU") +
-    "\n\nПриглашай друзей через персональную ссылку в KHAMOI.";
-  const result = await telegram("sendMessage", {
-    chat_id: draw.channel,
-    text,
-    reply_markup: { inline_keyboard: [[{ text: "Открыть KHAMOI", web_app: { url: WEBAPP_URL } }]] }
-  });
-  const { error } = await supabase.from("giveaways")
-    .update({ telegram_message_id: result.message_id }).eq("id", draw.id);
-  if (error) throw error;
+    "\n\nПриглашай друзей в канал KHAMOI по своей персональной ссылке.";
+  const keyboard = { inline_keyboard: [[{ text: "Открыть KHAMOI", web_app: { url: WEBAPP_URL } }]] };
+  const result = await publishToAllChannels(text, keyboard);
+  if (result.sent.length) {
+    const { error } = await supabase.from("giveaways")
+      .update({ telegram_message_id: result.sent[0].message_id }).eq("id", draw.id);
+    if (error) throw error;
+  }
+  if (!result.sent.length) throw new Error("Бот пока не зарегистрировал ни одного канала, где у него есть права администратора.");
+  if (result.failed.length) console.warn("Some channels did not receive the giveaway:", result.failed);
 }
 
 async function checkScheduledGiveaways() {
@@ -193,9 +277,7 @@ app.get("/health", (_req, res) => res.json({ ok: true, service: "KHAMOI" }));
 app.post("/api/auth", async (req, res) => {
   try {
     const tgUser = verifyInitData(req.body?.initData);
-    const startParam = tgUser.start_param || "";
-    const ref = String(startParam).startsWith("ref_") ? String(startParam).slice(4) : "";
-    const user = await registerUser(tgUser, ref);
+    const user = await registerUser(tgUser);
     const profile = await getProfile(user.id);
     res.json({ user, profile });
   } catch (e) { res.status(401).json({ error: e.message || "Ошибка авторизации" }); }
@@ -223,23 +305,20 @@ app.post("/api/admin/giveaways", async (req, res) => {
   try {
     const user = verifyInitData(req.headers.authorization?.replace(/^Bearer\s+/i, ""));
     if (!ADMIN_IDS.has(String(user.id))) return res.status(403).json({ error: "Нет доступа" });
-    const { title, prize, ends_at, channel } = req.body || {};
+    const { title, prize, ends_at } = req.body || {};
     const end = new Date(ends_at);
     if (!title || String(title).trim().length > 100 || !Number.isInteger(Number(prize)) ||
         Number(prize) < 1 || !Number.isFinite(end.getTime()) || end <= new Date()) {
       return res.status(400).json({ error: "Проверь название, приз и дату окончания" });
     }
-    const targetChannel = String(channel || "").trim();
     const { data, error } = await supabase.from("giveaways").insert({
       title: String(title).trim(), prize: Number(prize), ends_at: end.toISOString(),
-      channel: targetChannel || null, created_by: String(user.id), status: "active"
+      created_by: String(user.id), status: "active"
     }).select().single();
     if (error) throw error;
     let warning = null;
-    if (targetChannel) {
-      try { await publishGiveaway(data); }
-      catch (e) { warning = "Розыгрыш сохранён, но публикация не удалась: " + e.message; }
-    }
+    try { await publishGiveaway(data); }
+    catch (e) { warning = "Розыгрыш сохранён, но публикация не удалась: " + e.message; }
     res.json({ giveaway: data, warning });
   } catch (e) {
     console.error("Create giveaway error:", e.message);
@@ -263,13 +342,28 @@ app.post("/telegram/webhook", async (req, res) => {
   if (req.get("x-telegram-bot-api-secret-token") !== WEBHOOK_SECRET) return res.sendStatus(403);
   res.sendStatus(200);
   try {
-    const message = req.body?.message;
+    const update = req.body || {};
+    if (update.my_chat_member) {
+      const change = update.my_chat_member;
+      const status = change.new_chat_member?.status;
+      await saveBotChannel(change.chat, ["administrator", "creator"].includes(status));
+      return;
+    }
+    if (update.chat_member) {
+      await recordChannelJoin(update.chat_member);
+      return;
+    }
+    const message = update.message;
     if (!message?.from || typeof message.text !== "string" || !message.text.startsWith("/start")) return;
-    const payload = message.text.split(/\s+/)[1] || "";
-    const ref = payload.startsWith("ref_") ? payload.slice(4) : "";
-    const user = await registerUser(message.from, ref);
+    const user = await registerUser(message.from);
+    let inviteLink = null;
+    try { inviteLink = await ensureReferralLink(user.id); }
+    catch (e) { console.error("Could not create channel referral link:", e.message); }
     const keyboard = { inline_keyboard: [[{ text: "Открыть KHAMOI", web_app: { url: WEBAPP_URL } }]] };
-    const greeting = "Привет, " + user.first_name + "! 👋\n\nДобро пожаловать в KHAMOI. Здесь ты можешь следить за рейтингом приглашений и участвовать в розыгрышах.";
+    let greeting = "Привет, " + user.first_name + "! 👋\n\nДобро пожаловать в KHAMOI.\n\n";
+    greeting += inviteLink
+      ? "Твоя персональная ссылка для приглашения друзей в канал:\n" + inviteLink + "\n\nОтправь её друзьям. Приглашение засчитается после их вступления в канал."
+      : "Не удалось создать ссылку. Проверь, что бот является администратором канала @khamoi и имеет право приглашать пользователей.";
     await telegram("sendMessage", { chat_id: message.chat.id, text: greeting, reply_markup: keyboard });
   } catch (e) { console.error("Telegram update error:", e.message); }
 });
@@ -277,15 +371,17 @@ app.post("/telegram/webhook", async (req, res) => {
 async function configureWebhook() {
   const botInfo = await telegram("getMe");
   BOT_USERNAME = botInfo.username;
+  BOT_ID = botInfo.id;
   const url = process.env.RENDER_EXTERNAL_URL;
   if (!url) { console.warn("RENDER_EXTERNAL_URL is not set; configure webhook manually."); return; }
   try {
     await telegram("setWebhook", {
       url: url.replace(/\/$/, "") + "/telegram/webhook",
       secret_token: WEBHOOK_SECRET,
-      allowed_updates: ["message"]
+      allowed_updates: ["message", "chat_member", "my_chat_member"]
     });
     console.log("Telegram webhook configured.");
+    await syncMainChannel();
   } catch (e) { console.error("Webhook setup failed:", e.message); }
 }
 
