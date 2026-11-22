@@ -141,7 +141,7 @@ async function closeGiveaway(id) {
 
   const { data: top, error: topError } = await supabase.from("referral_totals")
     .select("user_id, first_name, username, referrals_count")
-    .order("referrals_count", { ascending: false }).limit(1);
+    .order("referrals_count", { ascending: false }).order("user_id", { ascending: true }).limit(1);
   if (topError) throw topError;
   const winner = top && top.length && top[0].referrals_count > 0 ? top[0] : null;
 
