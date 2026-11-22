@@ -3,7 +3,7 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 const { createClient } = require("@supabase/supabase-js");
 
-const required = ["BOT_TOKEN", "BOT_USERNAME", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "WEBAPP_URL", "ADMIN_IDS"];
+const required = ["BOT_TOKEN", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "ADMIN_IDS"];
 for (const key of required) {
   if (!process.env[key]) {
     console.error("Missing required environment variable:", key);
@@ -18,12 +18,11 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
   auth: { persistSession: false, autoRefreshToken: false }
 });
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const BOT_USERNAME = process.env.BOT_USERNAME.replace(/^@/, "");
+let BOT_USERNAME = "";
 const BOT_API = "https://api.telegram.org/bot" + BOT_TOKEN;
-const WEBAPP_URL = process.env.WEBAPP_URL.replace(/\/$/, "");
+const WEBAPP_URL = (process.env.RENDER_EXTERNAL_URL || "").replace(/\/$/, "");
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || crypto.randomBytes(32).toString("hex");
 const ADMIN_IDS = new Set(process.env.ADMIN_IDS.split(",").map(x => x.trim()).filter(Boolean));
-const DEFAULT_CHANNEL = process.env.DEFAULT_CHANNEL || "";
 
 async function telegram(method, body = {}) {
   const response = await fetch(BOT_API + "/" + method, {
@@ -230,7 +229,7 @@ app.post("/api/admin/giveaways", async (req, res) => {
         Number(prize) < 1 || !Number.isFinite(end.getTime()) || end <= new Date()) {
       return res.status(400).json({ error: "Проверь название, приз и дату окончания" });
     }
-    const targetChannel = String(channel || DEFAULT_CHANNEL).trim();
+    const targetChannel = String(channel || "").trim();
     const { data, error } = await supabase.from("giveaways").insert({
       title: String(title).trim(), prize: Number(prize), ends_at: end.toISOString(),
       channel: targetChannel || null, created_by: String(user.id), status: "active"
@@ -276,6 +275,8 @@ app.post("/telegram/webhook", async (req, res) => {
 });
 
 async function configureWebhook() {
+  const botInfo = await telegram("getMe");
+  BOT_USERNAME = botInfo.username;
   const url = process.env.RENDER_EXTERNAL_URL;
   if (!url) { console.warn("RENDER_EXTERNAL_URL is not set; configure webhook manually."); return; }
   try {
