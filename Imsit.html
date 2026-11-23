@@ -12,7 +12,7 @@
 </head>
 <body>
 <div id="view"></div><div id="error"></div>
-<div class="panel"><h1>ИМСИТ · 3D ARCHITECTURE</h1><div class="sub">Реконструкция по фотографиям фасада и ракурсам 2ГИС. Составной корпус, внутренний двор, закруглённый фасад и входная башня.</div></div>
+<div class="panel"><h1>ИМСИТ · 3D ARCHITECTURE</h1><div class="sub">3D-реконструкция корпуса ИМСИТ. Верхняя перемычка П-образной части продолжена вправо и открыто соединена с круглым корпусом.</div></div>
 <div class="controls"><button id="front" class="active">Фасад</button><button id="orbit">Обзор 360°</button><button id="top">Сверху</button><button id="reset">Сбросить вид</button><button id="labels">Подписи: выкл.</button></div>
 <div class="hint">Вращение — проведи пальцем · Масштаб — щипок двумя пальцами · ПК — мышь</div>
 <script type="module">
@@ -53,7 +53,7 @@ function cylinderArc(radius,height,thickness,start,length,y,mat){
   return {radius,start,length};
 }
 
-/* По ракурсам 2ГИС: слева прямоугольный U-образный корпус с открытым двором,
+/* По ракурсам 2ГИС: П-образный корпус с протяжённой верхней перемычкой,
    внутри двора отдельный низкий объём, справа круглый корпус с входной башней. */
 const roofMat=new THREE.MeshStandardMaterial({color:0xd8d5cc,roughness:.92,side:THREE.DoubleSide});
 const roofShade=new THREE.MeshStandardMaterial({color:0xc9c6be,roughness:.95,side:THREE.DoubleSide});
@@ -112,19 +112,41 @@ function wingSide(cx,cz,w,d,innerSign){
  box(root,w+.28,.26,.20,cx,11.42,front,mats.white);box(root,w+.28,.26,.20,cx,11.42,back,mats.white);
  hipRoof(cx,cz,w+.24,d+.24,11.52,2.75);
 }
-function rearWing(cx,cz,w,d){
+function rearWing(cx,cz,w,d,joinCircle=false){
  const h=11.4,th=.38,y=5.7,front=cz+d/2,back=cz-d/2;
- box(root,w,h,th,cx,y,front,mats.brick2);box(root,w,h,th,cx,y,back,mats.brick2);
- box(root,th,h,d,cx-w/2,y,cz,mats.brick2);box(root,th,h,d,cx+w/2,y,cz,mats.brick2);
- box(root,w-.5,h-.34,.055,cx,y,front+th/2+.03,mats.plaster);
+ const leftEdge=cx-w/2,rightEdge=cx+w/2;
+ const portalLeft=joinCircle?roundX-Math.sin(circleOpeningHalf)*R:0;
+ const portalRight=joinCircle?roundX+Math.sin(circleOpeningHalf)*R:0;
+ if(joinCircle){
+  const leftWidth=portalLeft-leftEdge;
+  if(leftWidth>.1)box(root,leftWidth,h,th,leftEdge+leftWidth/2,y,front,mats.brick2);
+  const rightWidth=rightEdge-portalRight;
+  if(rightWidth>.25)box(root,rightWidth,h,th,portalRight+rightWidth/2,y,front,mats.brick2);
+ }else box(root,w,h,th,cx,y,front,mats.brick2);
+ box(root,w,h,th,cx,y,back,mats.brick2);
+ box(root,th,h,d,leftEdge,y,cz,mats.brick2);
+ if(!joinCircle)box(root,th,h,d,rightEdge,y,cz,mats.brick2);
+ if(joinCircle){
+  for(const x of [portalLeft,portalRight])box(root,.30,h,.52,x,y,front,mats.brick2);
+  box(root,portalRight-portalLeft,.28,.55,(portalLeft+portalRight)/2,11.22,front,mats.white);
+ }
  for(const fy of [.28,3.95,7.62])box(root,w-.22,.20,d-.22,cx,fy,cz,slabMat);
- const rows=[1.42,5.12,8.82];
- for(let r=0;r<3;r++)for(let j=0;j<7;j++){
-  const xx=cx-w/2+2.25+j*((w-4.5)/6);
-  windowUnit(root,xx,rows[r],front+th/2+.08,1.5,2.02,0);
+ const rows=[1.42,5.12,8.82],cols=w>30?10:7;
+ for(let r=0;r<3;r++)for(let j=0;j<cols;j++){
+  const xx=leftEdge+2.25+j*((w-4.5)/(cols-1));
+  if(!joinCircle||xx<portalLeft-1.0||xx>portalRight+1.0)
+   windowUnit(root,xx,rows[r],front+th/2+.08,1.5,2.02,0);
   windowUnit(root,xx,rows[r],back-th/2-.08,1.5,2.02,Math.PI);
  }
- for(const yy of [2.02,5.72,9.42])box(root,w+.05,.13,th+.12,cx,yy,front,mats.white);
+ for(const yy of [2.02,5.72,9.42]){
+  if(joinCircle){
+   const trimWidth=portalLeft-leftEdge;
+   if(trimWidth>.1)box(root,trimWidth+.05,.13,th+.12,leftEdge+trimWidth/2,yy,front,mats.white);
+   const trimRight=rightEdge-portalRight;
+   if(trimRight>.25)box(root,trimRight+.05,.13,th+.12,portalRight+trimRight/2,yy,front,mats.white);
+  }else box(root,w+.05,.13,th+.12,cx,yy,front,mats.white);
+  box(root,w+.05,.13,th+.12,cx,yy,back,mats.white);
+ }
  hipRoof(cx,cz,w+.24,d+.24,11.52,2.15);
 }
 function pavilion(cx,cz,w,d){
@@ -142,26 +164,35 @@ function pavilion(cx,cz,w,d){
  for(const fy of [.25,3.1,5.95])box(root,w-.22,.16,d-.22,cx,fy,cz,slabMat);
  hipRoof(cx,cz,w+.22,d+.22,8.75,2.05);
 }
-const R=13.35,roundX=9,roundZ=-2.3,roundH=11.4,roundY=5.7,wallT=.42;
-const roundOuter=new THREE.Mesh(new THREE.CylinderGeometry(R,R,roundH,144,1,true),mats.brick);
-roundOuter.position.set(roundX,roundY,roundZ);roundOuter.castShadow=true;roundOuter.receiveShadow=true;root.add(roundOuter);
-const roundInner=new THREE.Mesh(new THREE.CylinderGeometry(R-wallT,R-wallT,roundH,144,1,true),mats.plaster);
-roundInner.position.set(roundX,roundY,roundZ);roundInner.castShadow=true;roundInner.receiveShadow=true;root.add(roundInner);
-for(const yy of [2.05,5.75,9.45]){const band=new THREE.Mesh(new THREE.CylinderGeometry(R+.12,R+.12,.18,144,1,true),mats.white);band.position.set(roundX,yy,roundZ);root.add(band)}
-const roundBase=new THREE.Mesh(new THREE.CylinderGeometry(R+.14,R+.14,.34,144,1,true),mats.trim);roundBase.position.set(roundX,.34,roundZ);root.add(roundBase);
-const roundCornice=new THREE.Mesh(new THREE.CylinderGeometry(R+.43,R+.43,.44,144,1,true),mats.white);roundCornice.position.set(roundX,11.62,roundZ);roundCornice.castShadow=true;root.add(roundCornice);
+const R=13.35,roundX=9,roundZ=-2.3,roundH=11.4,roundY=5.7,wallT=.42,circleOpeningHalf=.31;
+function roundArc(radius,height,segments,material,y){
+ const arcs=[[0,Math.PI-circleOpeningHalf],[Math.PI+circleOpeningHalf,Math.PI-circleOpeningHalf]];
+ for(const [angle,length] of arcs){
+  const part=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,segments,1,true,angle,length),material);
+  part.position.set(roundX,y,roundZ);part.castShadow=true;part.receiveShadow=true;root.add(part);
+ }
+}
+const angularDistance=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
+roundArc(R,roundH,144,mats.brick,roundY);
+roundArc(R-wallT,roundH,144,mats.plaster,roundY);
+for(const yy of [2.05,5.75,9.45])roundArc(R+.12,.18,144,mats.white,yy);
+roundArc(R+.14,.34,144,mats.trim,.34);
+roundArc(R+.43,.44,144,mats.white,11.62);
 const roundRoof=new THREE.Mesh(new THREE.CylinderGeometry(R+.43,R+.43,.18,144,1,false),mats.white);roundRoof.position.set(roundX,11.92,roundZ);roundRoof.receiveShadow=true;root.add(roundRoof);
 for(const fy of [.26,3.96,7.66]){
  const floorDisk=new THREE.Mesh(new THREE.CylinderGeometry(R-wallT-.09,R-wallT-.09,.18,128,1,false),slabMat);
  floorDisk.position.set(roundX,fy,roundZ);floorDisk.receiveShadow=true;root.add(floorDisk);
 }
 for(let row=0;row<3;row++)for(let i=0;i<16;i++){
- const a=(i/16)*Math.PI*2,px=roundX+(R+.075)*Math.sin(a),pz=roundZ+(R+.075)*Math.cos(a);
- if(px<1.1&&pz>1.0&&pz<7.8)continue;
+ const a=(i/16)*Math.PI*2;
+ if(Math.abs(angularDistance(a,Math.PI))<circleOpeningHalf+.02)continue;
+ const px=roundX+(R+.075)*Math.sin(a),pz=roundZ+(R+.075)*Math.cos(a);
  windowUnit(root,px,1.42+row*3.66,pz,1.58,2.06,a);
 }
 for(let i=0;i<12;i++){
- const a=(i/12)*Math.PI*2,px=roundX+(R+.12)*Math.sin(a),pz=roundZ+(R+.12)*Math.cos(a);
+ const a=(i/12)*Math.PI*2;
+  if(Math.abs(angularDistance(a,Math.PI))<circleOpeningHalf+.02)continue;
+  const px=roundX+(R+.12)*Math.sin(a),pz=roundZ+(R+.12)*Math.cos(a);
  const pipe=box(root,.10,11.15,.11,px,5.75,pz,new THREE.MeshStandardMaterial({color:0x783b32,roughness:.72}));pipe.rotation.y=a;
  if(i%3===1)for(const wy of [3.1,6.8,10.0]){
   const ac=box(root,.66,.38,.34,px+Math.sin(a)*.18,wy,pz+Math.cos(a)*.18,mats.white);ac.rotation.y=a;
@@ -171,7 +202,9 @@ for(let i=0;i<12;i++){
 const leftWing={x:-25.2,z:-6.2,w:7.4,d:24.4},rightWing={x:-8.2,z:-6.2,w:7.4,d:24.4};
 wingSide(leftWing.x,leftWing.z,leftWing.w,leftWing.d,1);
 wingSide(rightWing.x,rightWing.z,rightWing.w,rightWing.d,-1);
-rearWing(-16.7,-17.1,24.2,7.2);
+const crossbarLeft=leftWing.x-leftWing.w/2+.1;
+const crossbarRight=roundX+Math.sin(circleOpeningHalf)*R;
+rearWing((crossbarLeft+crossbarRight)/2,-17.1,crossbarRight-crossbarLeft,7.2,true);
 box(root,7.65,11.35,.72,leftWing.x,5.68,-15.8,mats.brick2);
 box(root,7.65,11.35,.72,rightWing.x,5.68,-15.8,mats.brick2);
 pavilion(-16.7,-7.0,7.8,6.4);
