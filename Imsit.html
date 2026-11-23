@@ -55,7 +55,7 @@ wing(-2.475,-17.5,30.05,6.0,3,8);
 // Короткие переходы замыкают боковые крылья с закруглённой частью без щелей.
 
 // Входная башня с вертикальным остеклением и светлой кровельной рамой.
-const tx=-14.95,tz=8.7;box(root,5.1,15.4,5.0,tx,7.7,tz,mats.brick);box(root,5.55,.52,5.35,tx,15.45,tz,mats.white);box(root,5.35,.3,5.15,tx,.34,tz,mats.trim);for(const xx of [tx-2.3,tx+2.3])box(root,.42,14.7,.5,xx,7.65,tz-2.3,mats.white);
+const tx=-14.95,tz=7.4;box(root,5.1,15.4,5.0,tx,7.7,tz,mats.brick);box(root,5.55,.52,5.35,tx,15.45,tz,mats.white);box(root,5.35,.3,5.15,tx,.34,tz,mats.trim);for(const xx of [tx-2.3,tx+2.3])box(root,.42,14.7,.5,xx,7.65,tz-2.3,mats.white);
 box(root,3.1,12,.16,tx,6.45,tz-2.58,mats.glass);for(const yy of [1.5,3.5,5.5,7.5,9.5,11.5])box(root,3.14,.11,.2,tx,yy,tz-2.48,mats.frame);box(root,.12,12,.2,tx,6.45,tz-2.46,mats.frame);
 box(root,5.8,.65,5.6,tx,15.85,tz,mats.white);box(root,4.8,.72,.18,tx,16.08,tz+2.68,mats.white);
 function textPlane(text,x,y,z,w,h,color,font){const c=document.createElement('canvas');c.width=1024;c.height=256;const ctx=c.getContext('2d');ctx.fillStyle=color||'#f2f0e9';ctx.font=font||'900 100px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,128);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));m.position.set(x,y,z);root.add(m);return m}
