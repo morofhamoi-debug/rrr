@@ -102,7 +102,7 @@ textPlane('ИМСИТ',tx,16.12,tz+2.78,3.1,.7,'#174f8d','900 120px Arial');text
 // Главный вход расположен у входной башни, со стороны внутреннего двора.
 box(root,3.55,3.0,.22,tx,1.72,tz-2.67,mats.frame);box(root,3.25,2.78,.07,tx,1.68,tz-2.52,mats.glass);for(const xx of [tx-1.08,tx,tx+1.08])box(root,.07,2.72,.07,xx,1.68,tz-2.45,mats.frame);box(root,3.75,.2,1.0,tx,3.32,tz-2.15,mats.white);for(let i=0;i<4;i++)box(root,3.55-i*.18,.14,.55,tx,.1+i*.14,tz-1.9+i*.48,mats.trim);
 // Главная входная группа на внутренней стороне закруглённого корпуса.
-const entrance=new THREE.Group();entrance.position.set(0,0,12.72);root.add(entrance);
+const entrance=new THREE.Group();entrance.position.set(0,0,13.08);entrance.rotation.y=Math.PI;root.add(entrance);
 box(entrance,4.15,3.55,.22,0,1.78,0,mats.white);
 box(entrance,3.72,3.18,.08,0,1.72,.14,mats.glass);
 for(const x of [-1.22,0,1.22])box(entrance,.075,3.12,.08,x,1.72,.22,mats.frame);
