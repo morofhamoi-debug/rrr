@@ -63,7 +63,11 @@ const base=new THREE.Mesh(new THREE.CylinderGeometry(R+.12,R+.12,.42,96,1,true,a
 function curvedWindow(theta,y,w=1.72,h=2.12){const x=(R+.055)*Math.sin(theta),z=(R+.055)*Math.cos(theta),g=new THREE.Group();g.position.set(x,y,z);g.rotation.y=theta;root.add(g);box(g,w,h,.14,-.02,0,mats.white);box(g,w-.22,h-.22,.035,-.02,.09,mats.glass);box(g,.065,h-.18,.045,-.02,.13,mats.frame);box(g,w-.18,.055,.045,-.02,.13,mats.frame);box(g,.045,h-.18,.05,-w*.25,.14,mats.frame);box(g,.045,h-.18,.05,w*.25,.14,mats.frame);box(g,w-.15,.07,.06,0,-h*.13,.16,mats.frame);box(g,w+.15,.10,.20,0,-h/2-.08,.05,mats.trim)}
 for(let row=0;row<3;row++)for(let i=0;i<9;i++)curvedWindow(arcStart+.16+i*(arcLen-.32)/8,1.42+row*3.66);
 for(let i=0;i<=8;i++){const a=arcStart+i*arcLen/8,x=(R+.12)*Math.sin(a),z=(R+.12)*Math.cos(a),p=box(root,.10,10.9,.11,x,5.75,z,new THREE.MeshStandardMaterial({color:0x77352d,roughness:.6}));p.rotation.y=a}
-box(root,9.2,11.3,9,-14.7,5.65,-3.5,mats.brick2);\nbox(root,4.8,11.25,4.5,-12.25,5.65,2.65,mats.brick2);\nfor(const y of [2,5.7,9.4])box(root,4.9,.22,4.6,-12.25,y,2.65,mats.white);\nbox(root,5.0,.45,4.7,-12.25,11.35,2.65,mats.white);\n
+box(root,9.2,11.3,9,-14.7,5.65,-3.5,mats.brick2);
+box(root,4.8,11.25,4.5,-12.25,5.65,2.65,mats.brick2);
+for(const y of [2,5.7,9.4])box(root,4.9,.22,4.6,-12.25,y,2.65,mats.white);
+box(root,5.0,.45,4.7,-12.25,11.35,2.65,mats.white);
+
 for(const y of [2,5.7,9.4])box(root,9.35,.22,9.15,-14.7,y,-3.5,mats.white);
 box(root,9.7,.5,9.5,-14.7,11.45,-3.5,mats.white);
 function flatWindow(x,y,z,w=1.45,h=2){const g=new THREE.Group();g.position.set(x,y,z);root.add(g);box(g,w,h,.16,0,0,0,mats.white);box(g,w-.2,h-.2,.04,0,0,.1,mats.glass);box(g,.055,h-.2,.05,0,0,.15,mats.frame);box(g,.05,h-.2,.05,-w*.25,0,.15,mats.frame);box(g,.05,h-.2,.05,w*.25,0,.15,mats.frame);box(g,w-.12,.06,.05,0,0,.15,mats.frame);box(g,w+.15,.1,.2,0,-h/2-.08,.04,mats.trim)}
@@ -76,8 +80,15 @@ box(root,.12,12,.22,-8.1,6.45,7.16,mats.frame);box(root,6.2,.7,5.5,-8.1,15.75,9.
 function textPlane(text,x,y,z,w,h,color='#f2f0e9',font='900 110px Arial'){const c=document.createElement('canvas');c.width=1024;c.height=320;const ctx=c.getContext('2d');ctx.fillStyle=color;ctx.font=font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,160);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide}));m.position.set(x,y,z);root.add(m);return m}
 textPlane('ИМСИТ',-8.1,16.1,11.72,3.0,.75,'#174f8d');textPlane('АКАДЕМИЯ МАРКЕТИНГА',-8.1,13.25,11.54,4.5,1.2);
 textPlane('СОЦИАЛЬНО-ИНФОРМАЦИОННЫХ ТЕХНОЛОГИЙ',-8.1,12.35,11.54,4.3,.55);
-box(root,3.4,2.8,.22,-14.7,1.55,1.12,mats.glass);box(root,3.7,.18,.7,-14.7,3.05,1.35,mats.white);
-for(let i=0;i<3;i++)box(root,.07,2.75,.08,-15.8+i*1.1,1.55,1.27,mats.frame);
+// Главный вход по отметке «Академия ИМСИТ»: входной портал на передней стороне левого крыла.
+box(root,3.65,3.15,.30,-14.7,1.72,1.18,mats.frame);
+box(root,3.35,2.88,.12,-14.7,1.68,1.38,mats.glass);
+for(const x of [-15.78,-14.7,-13.62])box(root,.075,2.82,.08,x,1.68,1.47,mats.frame);
+box(root,3.35,.09,.08,-14.7,1.65,1.49,mats.frame);
+box(root,3.9,.22,1.15,-14.7,3.42,1.42,mats.white);
+box(root,4.1,.18,1.45,-14.7,3.27,1.42,mats.trim);
+for(let i=0;i<4;i++)box(root,3.7-i*.18,.14,.58,-14.7,.12+i*.14,2.05+i*.48,mats.trim);
+for(const x of [-16.45,-12.95])box(root,.16,3.15,.18,x,1.7,1.36,mats.white);
 box(scene,180,.3,180,0,-.45,0,mats.soil);box(scene,55,.12,38,-5,-.22,12,mats.pavement);
 const tileMat1=new THREE.MeshStandardMaterial({color:0x858780,roughness:1}),tileMat2=new THREE.MeshStandardMaterial({color:0x777a75,roughness:1});
 for(let x=-31;x<25;x+=2.2)for(let z=-5;z<31;z+=2.2){const tile=box(scene,2.12,.025,2.12,x,-.13,z,((Math.round(x+z)%3)===0?tileMat1:tileMat2));tile.castShadow=false}
