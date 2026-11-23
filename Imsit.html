@@ -4,109 +4,73 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#10151c">
-<title>ИМСИТ — 3D-модель здания</title>
+<title>ИМСИТ — 3D-реконструкция здания</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#9eafc0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#f4f6f8}
-#view{position:fixed;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none}
-.panel{position:fixed;z-index:2;left:18px;top:18px;padding:14px 16px;border:1px solid #ffffff20;border-radius:16px;background:#101820b8;backdrop-filter:blur(16px);box-shadow:0 12px 40px #0005;max-width:min(370px,calc(100vw - 36px))}
-h1{font-size:15px;letter-spacing:.12em;margin:0 0 5px;font-weight:800}.sub{font-size:11px;color:#b9c4ce;line-height:1.45}
-.controls{position:fixed;z-index:2;right:18px;top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:48vw}
-button{border:1px solid #ffffff25;background:#101820c9;color:#f4f6f8;border-radius:12px;padding:10px 13px;font-size:12px;font-weight:650;backdrop-filter:blur(14px);cursor:pointer}
-button:active{transform:scale(.97)}button.active{background:#e7edf2;color:#17212b}
-.hint{position:fixed;z-index:2;bottom:18px;left:50%;transform:translateX(-50%);padding:10px 14px;border-radius:14px;background:#101820b8;border:1px solid #ffffff20;color:#d7e0e8;font-size:11px;white-space:nowrap;backdrop-filter:blur(12px);text-align:center}
-#error{display:none;position:fixed;z-index:5;inset:auto 12px 70px;padding:12px;border-radius:12px;background:#681f27;color:white;font-size:12px}
-@media(max-width:600px){.panel{left:10px;top:10px;padding:11px 12px;max-width:calc(100vw - 20px)}h1{font-size:13px}.sub{font-size:10px}.controls{top:auto;bottom:62px;right:10px;max-width:calc(100vw - 20px)}button{padding:9px 11px}.hint{bottom:10px;font-size:10px;width:calc(100vw - 20px);white-space:normal}}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#a9b9c8;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#f4f6f8}#view{position:fixed;inset:0}canvas{display:block;width:100%;height:100%;touch-action:none}.panel{position:fixed;z-index:2;left:16px;top:16px;padding:13px 15px;border:1px solid #ffffff25;border-radius:16px;background:#101820c9;backdrop-filter:blur(16px);box-shadow:0 12px 40px #0005;max-width:min(390px,calc(100vw - 32px))}h1{font-size:14px;letter-spacing:.12em;margin:0 0 5px;font-weight:800}.sub{font-size:11px;color:#c2ccd4;line-height:1.45}.controls{position:fixed;z-index:2;right:14px;top:14px;display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;max-width:48vw}button{border:1px solid #ffffff25;background:#101820d9;color:#f4f6f8;border-radius:12px;padding:10px 12px;font-size:12px;font-weight:650;backdrop-filter:blur(14px);cursor:pointer}button:active{transform:scale(.97)}button.active{background:#e7edf2;color:#17212b}.hint{position:fixed;z-index:2;bottom:14px;left:50%;transform:translateX(-50%);padding:10px 14px;border-radius:14px;background:#101820c9;border:1px solid #ffffff20;color:#d7e0e8;font-size:11px;white-space:nowrap;backdrop-filter:blur(12px);text-align:center}#error{display:none;position:fixed;z-index:5;inset:auto 12px 70px;padding:12px;border-radius:12px;background:#681f27;color:white;font-size:12px}@media(max-width:600px){.panel{left:9px;top:9px;padding:10px 12px;max-width:calc(100vw - 18px)}h1{font-size:12px}.sub{font-size:10px}.controls{top:auto;bottom:62px;right:9px;max-width:calc(100vw - 18px)}button{padding:9px 10px;font-size:11px}.hint{bottom:9px;font-size:10px;width:calc(100vw - 18px);white-space:normal}}
 </style>
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
-</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
 <body>
 <div id="view"></div><div id="error"></div>
-<div class="panel"><h1>ИМСИТ · 3D ARCHITECTURE</h1><div class="sub">Объёмная реконструкция по трём фотографиям. Фасад, закруглённый корпус, входная башня и боковое крыло смоделированы вручную.</div></div>
-<div class="controls"><button id="front" class="active">Фасад</button><button id="orbit">Обзор 360°</button><button id="reset">Сбросить вид</button><button id="labels">Подписи: выкл.</button></div>
+<div class="panel"><h1>ИМСИТ · 3D ARCHITECTURE</h1><div class="sub">Реконструкция по фотографиям фасада и ракурсам 2ГИС. Составной корпус, внутренний двор, закруглённый фасад и входная башня.</div></div>
+<div class="controls"><button id="front" class="active">Фасад</button><button id="orbit">Обзор 360°</button><button id="top">Сверху</button><button id="reset">Сбросить вид</button><button id="labels">Подписи: выкл.</button></div>
 <div class="hint">Вращение — проведи пальцем · Масштаб — щипок двумя пальцами · ПК — мышь</div>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 try {
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9eafc0);scene.fog=new THREE.Fog(0x9eafc0,65,145);
-const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,300);camera.position.set(27,19,43);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.querySelector('#view').appendChild(renderer.domElement);
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.target.set(0,5,0);controls.minDistance=12;controls.maxDistance=85;controls.maxPolarAngle=Math.PI*.49;
-scene.add(new THREE.HemisphereLight(0xe6f1ff,0x6b5947,1.55));
-const sun=new THREE.DirectionalLight(0xffe5c4,2.7);sun.position.set(-22,35,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-38;sun.shadow.camera.right=38;sun.shadow.camera.top=38;sun.shadow.camera.bottom=-38;scene.add(sun);
-const fill=new THREE.DirectionalLight(0xb9d7ff,.75);fill.position.set(22,18,-20);scene.add(fill);
-
-function makeBrickTexture(base,mortar){const cv=document.createElement('canvas');cv.width=512;cv.height=512;const g=cv.getContext('2d');g.fillStyle=mortar;g.fillRect(0,0,512,512);let seed=19;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};for(let r=0;r<22;r++){for(let col=-1;col<9;col++){const x=col*72+(r%2)*36,y=r*24;g.fillStyle=base;g.fillRect(x+2,y+2,68,20);g.fillStyle='rgba(255,220,195,.10)';g.fillRect(x+4,y+4,64,2);g.fillStyle='rgba(20,8,5,.14)';g.fillRect(x+4,y+18,64,2);for(let k=0;k<6;k++){g.fillStyle='rgba(35,12,8,'+(rand()*.10)+')';g.fillRect(x+4+rand()*60,y+4+rand()*13,2+rand()*5,1+rand()*2)}}}const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,2);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t}
-const brickTexture=makeBrickTexture('#874638','#b99a89');const wingTexture=makeBrickTexture('#754035','#b18e7e');
-const mats={plaster:new THREE.MeshStandardMaterial({color:0xf0eee7,roughness:.96}),brick:new THREE.MeshStandardMaterial({map:brickTexture,bumpMap:brickTexture,bumpScale:.045,roughness:.94}),brick2:new THREE.MeshStandardMaterial({map:wingTexture,bumpMap:wingTexture,bumpScale:.04,roughness:.95}),white:new THREE.MeshStandardMaterial({color:0xe6e5df,roughness:.48}),trim:new THREE.MeshStandardMaterial({color:0xc9c9c2,roughness:.55}),glass:new THREE.MeshPhysicalMaterial({color:0x243b4c,metalness:.42,roughness:.16,transparent:true,opacity:.88,clearcoat:1}),frame:new THREE.MeshStandardMaterial({color:0xe9eceb,roughness:.42,metalness:.18}),dark:new THREE.MeshStandardMaterial({color:0x242a2d,roughness:.7}),pavement:new THREE.MeshStandardMaterial({color:0x777a76,roughness:1}),soil:new THREE.MeshStandardMaterial({color:0x51483d,roughness:1})};
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xa9b9c8);scene.fog=new THREE.Fog(0xa9b9c8,95,190);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,400);camera.position.set(30,24,52);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;document.querySelector('#view').appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.065;controls.target.set(-3,5,0);controls.minDistance=12;controls.maxDistance=110;controls.maxPolarAngle=Math.PI*.49;
+scene.add(new THREE.HemisphereLight(0xe8f1ff,0x756354,1.65));
+const sun=new THREE.DirectionalLight(0xffe5c8,2.55);sun.position.set(-28,42,30);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-55;sun.shadow.camera.right=55;sun.shadow.camera.top=55;sun.shadow.camera.bottom=-55;sun.shadow.bias=-.00015;scene.add(sun);
+const fill=new THREE.DirectionalLight(0xc4dcf4,.8);fill.position.set(25,20,-30);scene.add(fill);
+function brickTexture(base,mortar){const c=document.createElement('canvas');c.width=512;c.height=512;const g=c.getContext('2d');g.fillStyle=mortar;g.fillRect(0,0,512,512);let seed=27;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};for(let r=0;r<22;r++)for(let col=-1;col<9;col++){const x=col*72+(r%2)*36,y=r*24;g.fillStyle=base;g.fillRect(x+2,y+2,68,20);g.fillStyle='rgba(255,225,205,.12)';g.fillRect(x+4,y+4,64,2);g.fillStyle='rgba(20,8,5,.16)';g.fillRect(x+4,y+18,64,2);for(let k=0;k<7;k++){g.fillStyle='rgba(35,12,8,'+(rnd()*.11)+')';g.fillRect(x+4+rnd()*60,y+4+rnd()*13,2+rnd()*5,1+rnd()*2)}}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,2);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t}
+const bt=brickTexture('#874638','#b99a89'),bt2=brickTexture('#794337','#b39282');
+const mats={brick:new THREE.MeshStandardMaterial({map:bt,bumpMap:bt,bumpScale:.035,roughness:.94}),brick2:new THREE.MeshStandardMaterial({map:bt2,bumpMap:bt2,bumpScale:.03,roughness:.95}),white:new THREE.MeshStandardMaterial({color:0xe9e8e1,roughness:.55}),plaster:new THREE.MeshStandardMaterial({color:0xf3f1eb,roughness:.96}),trim:new THREE.MeshStandardMaterial({color:0xc9c9c2,roughness:.55}),glass:new THREE.MeshPhysicalMaterial({color:0x263d4c,metalness:.34,roughness:.17,transparent:true,opacity:.9,clearcoat:1}),frame:new THREE.MeshStandardMaterial({color:0xf0f1ed,roughness:.42,metalness:.12}),dark:new THREE.MeshStandardMaterial({color:0x242a2d,roughness:.72}),ground:new THREE.MeshStandardMaterial({color:0x777a75,roughness:1}),soil:new THREE.MeshStandardMaterial({color:0x77705f,roughness:1})};
 const root=new THREE.Group();scene.add(root);
 function box(parent,w,h,d,x,y,z,mat){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
-function curvedWall(radius,height,thickness,start,length,y,outerMat,innerMat=mats.plaster){
-const outer=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,128,1,true,start,length),outerMat);
-outer.position.y=y;outer.castShadow=true;outer.receiveShadow=true;root.add(outer);
-const inner=new THREE.Mesh(new THREE.CylinderGeometry(radius-thickness,radius-thickness,height,128,1,true,start,length),innerMat);
-inner.position.y=y;inner.castShadow=true;inner.receiveShadow=true;root.add(inner);
-// Solid radial returns close both exposed ends: no open wall edges or visible gaps.
-for(const a of [start,start+length]){
-const mid=radius-thickness/2;
-const cap=box(root,thickness,height,thickness,mid*Math.sin(a),y,mid*Math.cos(a),outerMat);
-cap.rotation.y=a;
+function cylinderArc(radius,height,thickness,start,length,y,mat){const outer=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,160,1,true,start,length),mat);outer.position.y=y;outer.castShadow=true;outer.receiveShadow=true;root.add(outer);const inner=new THREE.Mesh(new THREE.CylinderGeometry(radius-thickness,radius-thickness,height,160,1,true,start,length),mats.plaster);inner.position.y=y;inner.castShadow=true;inner.receiveShadow=true;root.add(inner);for(const a of [start,start+length]){const x=(radius-thickness/2)*Math.sin(a),z=(radius-thickness/2)*Math.cos(a);const cap=box(root,thickness,height,.18,x,y,z,mat);cap.rotation.y=a}return {radius,start,length}}
+const R=13.4,A=-1.20,L=2.4;
+cylinderArc(R,11.4,.42,A,L,5.7,mats.brick);
+for(const y of [2.05,5.75,9.45]){const band=new THREE.Mesh(new THREE.CylinderGeometry(R+.10,R+.10,.20,160,1,true,A,L),mats.white);band.position.y=y;root.add(band)}
+const roof=new THREE.Mesh(new THREE.CylinderGeometry(R+.48,R+.48,.48,160,1,true,A,L),mats.white);roof.position.y=11.55;root.add(roof);
+const plinth=new THREE.Mesh(new THREE.CylinderGeometry(R+.12,R+.12,.38,160,1,true,A,L),mats.trim);plinth.position.y=.34;root.add(plinth);
+function curvedWindow(a,y,w=1.72,h=2.08){const x=(R+.06)*Math.sin(a),z=(R+.06)*Math.cos(a),g=new THREE.Group();g.position.set(x,y,z);g.rotation.y=a;root.add(g);box(g,w,h,.14,0,0,0,mats.white);box(g,w-.22,h-.22,.035,0,0,.09,mats.glass);box(g,.055,h-.18,.045,0,0,.14,mats.frame);box(g,w-.18,.055,.045,0,0,.14,mats.frame);box(g,.045,h-.18,.05,-w*.25,0,.15,mats.frame);box(g,.045,h-.18,.05,w*.25,0,.15,mats.frame);box(g,w-.14,.07,.06,0,-h*.13,.16,mats.frame);box(g,w+.15,.10,.2,0,-h/2-.08,.05,mats.trim)}
+for(let row=0;row<3;row++)for(let i=0;i<9;i++)curvedWindow(A+.15+i*(L-.3)/8,1.42+row*3.66);
+for(let i=0;i<=8;i++){const a=A+i*L/8,x=(R+.13)*Math.sin(a),z=(R+.13)*Math.cos(a),p=box(root,.10,10.9,.11,x,5.75,z,new THREE.MeshStandardMaterial({color:0x77372f,roughness:.62}));p.rotation.y=a}
+// Прямоугольное крыло: наружная кладка и отдельная белая внутренняя отделка двора.
+function wing(x,z,w,d,rows=3,cols=4,front=true){const h=11.4,t=.34,y=h/2;box(root,w,h,t,x,y,z-d/2,mats.brick2);box(root,w,h,t,x,y,z+d/2,mats.brick2);box(root,t,h,d,x-w/2,y,z,mats.brick2);box(root,t,h,d,x+w/2,y,z,mats.brick2);box(root,w-.55,.16,d-.55,x,.12,z,mats.plaster);for(const yy of [2.05,5.75,9.45]){box(root,w,.20,d,x,yy,z,mats.white)}box(root,w+.32,.42,d+.32,x,11.55,z,mats.white);
+// White plaster surfaces on the courtyard-facing interior walls.
+box(root,w-.7,h-.35,.055,x,y,z+d/2-.22,mats.plaster);box(root,t-.05,h-.35,d-.7,x+w/2-.22,y,z,mats.plaster);
+function win(px,py,pz,ww=1.48,hh=2.05,rot=0){const g=new THREE.Group();g.position.set(px,py,pz);g.rotation.y=rot;root.add(g);box(g,ww,hh,.13,0,0,0,mats.white);box(g,ww-.2,hh-.2,.035,0,0,.09,mats.glass);box(g,.055,hh-.16,.045,0,0,.14,mats.frame);box(g,.045,hh-.16,.045,-ww*.25,0,.14,mats.frame);box(g,.045,hh-.16,.045,ww*.25,0,.14,mats.frame);box(g,ww-.12,.055,.045,0,0,.14,mats.frame);box(g,ww+.12,.1,.18,0,-hh/2-.08,.04,mats.trim)}
+for(let r=0;r<3;r++)for(let c=0;c<cols;c++){const px=x-w/2+1.25+c*((w-2.5)/Math.max(1,cols-1));const py=1.35+r*3.68;win(px,py,z+d/2+.11,1.4,2.0,0);}
+for(let r=0;r<3;r++)for(let c=0;c<Math.max(2,Math.floor(d/4));c++){const pz=z-d/2+1.8+c*((d-3.6)/Math.max(1,Math.floor(d/4)-1));win(x+w/2+.11,1.35+r*3.68,pz,1.35,2,Math.PI/2)}
 }
-}
-const R=13.4,arcStart=-1.20,arcLen=2.4;
-curvedWall(R,11.4,.48,arcStart,arcLen,5.7,mats.brick,mats.plaster);
-for(const y of [2.05,5.75,9.45]){const b=new THREE.Mesh(new THREE.CylinderGeometry(R+.09,R+.09,.22,96,1,true,arcStart,arcLen),mats.white);b.position.y=y;root.add(b)}
-const roof=new THREE.Mesh(new THREE.CylinderGeometry(R+.52,R+.52,.48,96,1,true,arcStart,arcLen),mats.white);roof.position.y=11.55;root.add(roof);
-const base=new THREE.Mesh(new THREE.CylinderGeometry(R+.12,R+.12,.42,96,1,true,arcStart,arcLen),mats.trim);base.position.y=.35;root.add(base);
-function curvedWindow(theta,y,w=1.72,h=2.12){const x=(R+.055)*Math.sin(theta),z=(R+.055)*Math.cos(theta),g=new THREE.Group();g.position.set(x,y,z);g.rotation.y=theta;root.add(g);box(g,w,h,.14,-.02,0,mats.white);box(g,w-.22,h-.22,.035,-.02,.09,mats.glass);box(g,.065,h-.18,.045,-.02,.13,mats.frame);box(g,w-.18,.055,.045,-.02,.13,mats.frame);box(g,.045,h-.18,.05,-w*.25,.14,mats.frame);box(g,.045,h-.18,.05,w*.25,.14,mats.frame);box(g,w-.15,.07,.06,0,-h*.13,.16,mats.frame);box(g,w+.15,.10,.20,0,-h/2-.08,.05,mats.trim)}
-for(let row=0;row<3;row++)for(let i=0;i<9;i++)curvedWindow(arcStart+.16+i*(arcLen-.32)/8,1.42+row*3.66);
-for(let i=0;i<=8;i++){const a=arcStart+i*arcLen/8,x=(R+.12)*Math.sin(a),z=(R+.12)*Math.cos(a),p=box(root,.10,10.9,.11,x,5.75,z,new THREE.MeshStandardMaterial({color:0x77352d,roughness:.6}));p.rotation.y=a}
-box(root,9.2,11.3,9,-14.7,5.65,-3.5,mats.brick2);
-box(root,4.8,11.25,4.5,-12.25,5.65,2.65,mats.brick2);
-for(const y of [2,5.7,9.4])box(root,4.9,.22,4.6,-12.25,y,2.65,mats.white);
-box(root,5.0,.45,4.7,-12.25,11.35,2.65,mats.white);
+// Два длинных боковых крыла и задний корпус образуют читаемый внутренний двор.
+wing(-22.0,-2.0,9.0,25.0,3,4);
+wing(16.8,-3.0,8.0,23.0,3,3);
+wing(-2.5,-17.5,29.8,6.0,3,8);
+// Короткие переходы замыкают боковые крылья с закруглённой частью без щелей.
 
-for(const y of [2,5.7,9.4])box(root,9.35,.22,9.15,-14.7,y,-3.5,mats.white);
-box(root,9.7,.5,9.5,-14.7,11.45,-3.5,mats.white);
-function flatWindow(x,y,z,w=1.45,h=2){const g=new THREE.Group();g.position.set(x,y,z);root.add(g);box(g,w,h,.16,0,0,0,mats.white);box(g,w-.2,h-.2,.04,0,0,.1,mats.glass);box(g,.055,h-.2,.05,0,0,.15,mats.frame);box(g,.05,h-.2,.05,-w*.25,0,.15,mats.frame);box(g,.05,h-.2,.05,w*.25,0,.15,mats.frame);box(g,w-.12,.06,.05,0,0,.15,mats.frame);box(g,w+.15,.1,.2,0,-h/2-.08,.04,mats.trim)}
-for(let row=0;row<3;row++)for(let col=0;col<3;col++)flatWindow(-17.7+col*3,row*3.65+1.4,1.08);
-box(root,5.1,15.4,4.5,-8.1,7.7,9.2,mats.brick);box(root,5.45,.48,4.9,-8.1,15.35,9.2,mats.white);box(root,5.25,.32,4.7,-8.1,.35,9.2,mats.trim);
-for(const x of [-10.35,-5.85])box(root,.48,14.7,.55,x,7.65,7,mats.white);
-box(root,3.05,12,.18,-8.1,6.45,7.02,mats.glass);
-for(const y of [1.5,3.5,5.5,7.5,9.5,11.5])box(root,3.1,.11,.22,-8.1,y,7.14,mats.frame);
-box(root,.12,12,.22,-8.1,6.45,7.16,mats.frame);box(root,6.2,.7,5.5,-8.1,15.75,9.2,mats.white);box(root,4.8,.72,.18,-8.1,16.05,11.58,mats.white);
-function textPlane(text,x,y,z,w,h,color='#f2f0e9',font='900 110px Arial'){const c=document.createElement('canvas');c.width=1024;c.height=320;const ctx=c.getContext('2d');ctx.fillStyle=color;ctx.font=font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,160);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide}));m.position.set(x,y,z);root.add(m);return m}
-textPlane('ИМСИТ',-8.1,16.1,11.72,3.0,.75,'#174f8d');textPlane('АКАДЕМИЯ МАРКЕТИНГА',-8.1,13.25,11.54,4.5,1.2);
-textPlane('СОЦИАЛЬНО-ИНФОРМАЦИОННЫХ ТЕХНОЛОГИЙ',-8.1,12.35,11.54,4.3,.55);
-// Главный вход по отметке «Академия ИМСИТ»: входной портал на передней стороне левого крыла.
-box(root,3.65,3.15,.30,-14.7,1.72,1.18,mats.frame);
-box(root,3.35,2.88,.12,-14.7,1.68,1.38,mats.glass);
-for(const x of [-15.78,-14.7,-13.62])box(root,.075,2.82,.08,x,1.68,1.47,mats.frame);
-box(root,3.35,.09,.08,-14.7,1.65,1.49,mats.frame);
-box(root,3.9,.22,1.15,-14.7,3.42,1.42,mats.white);
-box(root,4.1,.18,1.45,-14.7,3.27,1.42,mats.trim);
-for(let i=0;i<4;i++)box(root,3.7-i*.18,.14,.58,-14.7,.12+i*.14,2.05+i*.48,mats.trim);
-for(const x of [-16.45,-12.95])box(root,.16,3.15,.18,x,1.7,1.36,mats.white);
-box(scene,180,.3,180,0,-.45,0,mats.soil);box(scene,55,.12,38,-5,-.22,12,mats.pavement);
-const tileMat1=new THREE.MeshStandardMaterial({color:0x858780,roughness:1}),tileMat2=new THREE.MeshStandardMaterial({color:0x777a75,roughness:1});
-for(let x=-31;x<25;x+=2.2)for(let z=-5;z<31;z+=2.2){const tile=box(scene,2.12,.025,2.12,x,-.13,z,((Math.round(x+z)%3)===0?tileMat1:tileMat2));tile.castShadow=false}
-function tree(x,z,s=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18*s,.28*s,3.2*s,8),new THREE.MeshStandardMaterial({color:0x55402d}));trunk.position.set(x,1.5*s,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<5;i++){const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.9*s,1),new THREE.MeshStandardMaterial({color:[0x304b35,0x405b3a,0x526443][i%3],roughness:1}));crown.position.set(x+((i%2)-.5)*1.2*s,(3.4+i%3*.6)*s,z+((i%3)-1)*.6*s);crown.castShadow=true;scene.add(crown)}}
-tree(-25,10,1.5);tree(19,5,1.7);tree(23,-9,1.2);tree(-24,-10,1.1);
-for(const x of [-20,16]){box(scene,3,.16,.65,x,.55,16,mats.dark);for(const dx of [-1.2,1.2])box(scene,.13,.65,.13,x+dx,.25,16,mats.dark)}
-for(let i=0;i<3;i++)box(root,5-i*.35,.18,.65,-14.7,.05+i*.18,2.2+i*.55,mats.trim);
-const labelGroup=new THREE.Group();scene.add(labelGroup);
-function tag(text,x,y,z){const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#101820cc';ctx.fillRect(0,0,512,128);ctx.fillStyle='white';ctx.font='bold 38px Arial';ctx.textAlign='center';ctx.fillText(text,256,78);const t=new THREE.CanvasTexture(c);const m=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));m.position.set(x,y,z);m.scale.set(7,1.75,1);labelGroup.add(m)}
-tag('ГЛАВНЫЙ ВХОД',-14.7,4.3,3);tag('ЗАКРУГЛЁННЫЙ ФАСАД',4,13,10);tag('ВХОДНАЯ БАШНЯ',-8,18,8);labelGroup.visible=false;
-const targetFront=new THREE.Vector3(-1,7,2);function setView(pos){camera.position.copy(pos);controls.target.copy(targetFront);controls.update()}
-document.querySelector('#front').onclick=()=>{setView(new THREE.Vector3(0,13,43));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#front').classList.add('active')};
-document.querySelector('#orbit').onclick=()=>{setView(new THREE.Vector3(29,17,27));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#orbit').classList.add('active')};
-document.querySelector('#reset').onclick=()=>{setView(new THREE.Vector3(25,17,37));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'))};
-document.querySelector('#labels').onclick=e=>{labelGroup.visible=!labelGroup.visible;e.target.textContent='Подписи: '+(labelGroup.visible?'вкл.':'выкл.');e.target.classList.toggle('active',labelGroup.visible)};
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
-function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();
-} catch(err) {console.error(err);const el=document.querySelector('#error');el.style.display='block';el.textContent='Не удалось запустить 3D: '+(err?.message||err)}
+// Входная башня с вертикальным остеклением и светлой кровельной рамой.
+const tx=-14.95,tz=8.7;box(root,5.1,15.4,5.0,tx,7.7,tz,mats.brick);box(root,5.55,.52,5.35,tx,15.45,tz,mats.white);box(root,5.35,.3,5.15,tx,.34,tz,mats.trim);for(const xx of [tx-2.3,tx+2.3])box(root,.42,14.7,.5,xx,7.65,tz-2.3,mats.white);
+box(root,3.1,12,.16,tx,6.45,tz-2.58,mats.glass);for(const yy of [1.5,3.5,5.5,7.5,9.5,11.5])box(root,3.14,.11,.2,tx,yy,tz-2.48,mats.frame);box(root,.12,12,.2,tx,6.45,tz-2.46,mats.frame);
+box(root,5.8,.65,5.6,tx,15.85,tz,mats.white);box(root,4.8,.72,.18,tx,16.08,tz+2.68,mats.white);
+function textPlane(text,x,y,z,w,h,color,font){const c=document.createElement('canvas');c.width=1024;c.height=256;const ctx=c.getContext('2d');ctx.fillStyle=color||'#f2f0e9';ctx.font=font||'900 100px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,128);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));m.position.set(x,y,z);root.add(m);return m}
+textPlane('ИМСИТ',tx,16.12,tz+2.78,3.1,.7,'#174f8d','900 120px Arial');textPlane('АКАДЕМИЯ МАРКЕТИНГА',tx,13.25,tz+2.58,4.7,1.05,'#f5f1e9','900 82px Arial');textPlane('СОЦИАЛЬНО-ИНФОРМАЦИОННЫХ ТЕХНОЛОГИЙ',tx,12.35,tz+2.58,4.5,.5,'#f5f1e9','700 38px Arial');
+// Главный вход расположен у входной башни, со стороны внутреннего двора.
+box(root,3.55,3.0,.22,tx,1.72,tz-2.67,mats.frame);box(root,3.25,2.78,.07,tx,1.68,tz-2.52,mats.glass);for(const xx of [tx-1.08,tx,tx+1.08])box(root,.07,2.72,.07,xx,1.68,tz-2.45,mats.frame);box(root,3.75,.2,1.0,tx,3.32,tz-2.15,mats.white);for(let i=0;i<4;i++)box(root,3.55-i*.18,.14,.55,tx,.1+i*.14,tz-1.9+i*.48,mats.trim);
+// Земля, двор, плитка и подходы.
+box(scene,220,.35,220,0,-.5,-2,mats.soil);box(scene,52,.13,48,-3,-.22,8,mats.ground);const tileA=new THREE.MeshStandardMaterial({color:0x858780,roughness:1}),tileB=new THREE.MeshStandardMaterial({color:0x777a75,roughness:1});for(let x=-36;x<34;x+=2.2)for(let z=-24;z<31;z+=2.2){const m=box(scene,2.12,.025,2.12,x,-.13,z,((Math.round(x+z)%3)===0?tileA:tileB));m.castShadow=false}
+function tree(x,z,s){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.16*s,.24*s,3*s,8),new THREE.MeshStandardMaterial({color:0x55402d}));trunk.position.set(x,1.45*s,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<5;i++){const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.65*s,1),new THREE.MeshStandardMaterial({color:[0x304b35,0x405b3a,0x526443][i%3],roughness:1}));crown.position.set(x+((i%2)-.5)*1.0*s,(3.3+i%3*.55)*s,z+((i%3)-1)*.5*s);crown.castShadow=true;scene.add(crown)}}tree(-31,11,1.4);tree(25,9,1.5);tree(27,-15,1.2);tree(-29,-18,1.1);tree(0,-24,1.0);
+for(const x of [-25,22]){box(scene,3,.16,.65,x,.55,20,mats.dark);for(const dx of [-1.2,1.2])box(scene,.13,.65,.13,x+dx,.25,20,mats.dark)}
+const labels=new THREE.Group();scene.add(labels);function tag(txt,x,y,z){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.fillStyle='#101820cc';g.fillRect(0,0,512,128);g.fillStyle='white';g.font='bold 38px Arial';g.textAlign='center';g.fillText(txt,256,78);const t=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.position.set(x,y,z);s.scale.set(7,1.75,1);labels.add(s)}tag('ГЛАВНЫЙ ВХОД',tx,4.2,tz-4);tag('ЗАКРУГЛЁННЫЙ ФАСАД',1,13,13);tag('ВХОДНАЯ БАШНЯ',tx,18,tz);tag('ВНУТРЕННИЙ ДВОР',-3,3,-3);labels.visible=false;
+const target=new THREE.Vector3(-3,5,0);function view(pos){camera.position.copy(pos);controls.target.copy(target);controls.update()}
+document.querySelector('#front').onclick=()=>{view(new THREE.Vector3(-2,14,56));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#front').classList.add('active')};document.querySelector('#orbit').onclick=()=>{view(new THREE.Vector3(42,22,32));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#orbit').classList.add('active')};document.querySelector('#top').onclick=()=>{view(new THREE.Vector3(-3,75,0.01));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#top').classList.add('active')};document.querySelector('#reset').onclick=()=>{view(new THREE.Vector3(30,24,52));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'))};document.querySelector('#labels').onclick=e=>{labels.visible=!labels.visible;e.target.textContent='Подписи: '+(labels.visible?'вкл.':'выкл.');e.target.classList.toggle('active',labels.visible)};
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();
+}catch(err){console.error(err);const el=document.querySelector('#error');el.style.display='block';el.textContent='Не удалось запустить 3D: '+(err&&err.message?err.message:String(err))}
 </script>
 </body>
 </html>
