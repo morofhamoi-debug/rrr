@@ -40,19 +40,30 @@ const fill=new THREE.DirectionalLight(0xb9d7ff,.75);fill.position.set(22,18,-20)
 
 function makeBrickTexture(base,mortar){const cv=document.createElement('canvas');cv.width=512;cv.height=512;const g=cv.getContext('2d');g.fillStyle=mortar;g.fillRect(0,0,512,512);let seed=19;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};for(let r=0;r<22;r++){for(let col=-1;col<9;col++){const x=col*72+(r%2)*36,y=r*24;g.fillStyle=base;g.fillRect(x+2,y+2,68,20);g.fillStyle='rgba(255,220,195,.10)';g.fillRect(x+4,y+4,64,2);g.fillStyle='rgba(20,8,5,.14)';g.fillRect(x+4,y+18,64,2);for(let k=0;k<6;k++){g.fillStyle='rgba(35,12,8,'+(rand()*.10)+')';g.fillRect(x+4+rand()*60,y+4+rand()*13,2+rand()*5,1+rand()*2)}}}const t=new THREE.CanvasTexture(cv);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,2);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t}
 const brickTexture=makeBrickTexture('#874638','#b99a89');const wingTexture=makeBrickTexture('#754035','#b18e7e');
-const mats={brick:new THREE.MeshStandardMaterial({map:brickTexture,bumpMap:brickTexture,bumpScale:.045,roughness:.94}),brick2:new THREE.MeshStandardMaterial({map:wingTexture,bumpMap:wingTexture,bumpScale:.04,roughness:.95}),white:new THREE.MeshStandardMaterial({color:0xe6e5df,roughness:.48}),trim:new THREE.MeshStandardMaterial({color:0xc9c9c2,roughness:.55}),glass:new THREE.MeshPhysicalMaterial({color:0x243b4c,metalness:.42,roughness:.16,transparent:true,opacity:.88,clearcoat:1}),frame:new THREE.MeshStandardMaterial({color:0xe9eceb,roughness:.42,metalness:.18}),dark:new THREE.MeshStandardMaterial({color:0x242a2d,roughness:.7}),pavement:new THREE.MeshStandardMaterial({color:0x777a76,roughness:1}),soil:new THREE.MeshStandardMaterial({color:0x51483d,roughness:1})};
+const mats={plaster:new THREE.MeshStandardMaterial({color:0xf0eee7,roughness:.96}),brick:new THREE.MeshStandardMaterial({map:brickTexture,bumpMap:brickTexture,bumpScale:.045,roughness:.94}),brick2:new THREE.MeshStandardMaterial({map:wingTexture,bumpMap:wingTexture,bumpScale:.04,roughness:.95}),white:new THREE.MeshStandardMaterial({color:0xe6e5df,roughness:.48}),trim:new THREE.MeshStandardMaterial({color:0xc9c9c2,roughness:.55}),glass:new THREE.MeshPhysicalMaterial({color:0x243b4c,metalness:.42,roughness:.16,transparent:true,opacity:.88,clearcoat:1}),frame:new THREE.MeshStandardMaterial({color:0xe9eceb,roughness:.42,metalness:.18}),dark:new THREE.MeshStandardMaterial({color:0x242a2d,roughness:.7}),pavement:new THREE.MeshStandardMaterial({color:0x777a76,roughness:1}),soil:new THREE.MeshStandardMaterial({color:0x51483d,roughness:1})};
 const root=new THREE.Group();scene.add(root);
 function box(parent,w,h,d,x,y,z,mat){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
-function curvedWall(radius,height,thickness,start,length,y,mat){const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,96,1,true,start,length),mat);m.position.y=y;m.castShadow=true;m.receiveShadow=true;root.add(m);const inner=new THREE.Mesh(new THREE.CylinderGeometry(radius-thickness,radius-thickness,height,96,1,true,start,length),mat);inner.position.y=y;root.add(inner)}
+function curvedWall(radius,height,thickness,start,length,y,outerMat,innerMat=mats.plaster){
+const outer=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,128,1,true,start,length),outerMat);
+outer.position.y=y;outer.castShadow=true;outer.receiveShadow=true;root.add(outer);
+const inner=new THREE.Mesh(new THREE.CylinderGeometry(radius-thickness,radius-thickness,height,128,1,true,start,length),innerMat);
+inner.position.y=y;inner.castShadow=true;inner.receiveShadow=true;root.add(inner);
+// Solid radial returns close both exposed ends: no open wall edges or visible gaps.
+for(const a of [start,start+length]){
+const mid=radius-thickness/2;
+const cap=box(root,thickness,height,thickness,mid*Math.sin(a),y,mid*Math.cos(a),outerMat);
+cap.rotation.y=a;
+}
+}
 const R=13.4,arcStart=-1.20,arcLen=2.4;
-curvedWall(R,11.4,.48,arcStart,arcLen,5.7,mats.brick);
+curvedWall(R,11.4,.48,arcStart,arcLen,5.7,mats.brick,mats.plaster);
 for(const y of [2.05,5.75,9.45]){const b=new THREE.Mesh(new THREE.CylinderGeometry(R+.09,R+.09,.22,96,1,true,arcStart,arcLen),mats.white);b.position.y=y;root.add(b)}
 const roof=new THREE.Mesh(new THREE.CylinderGeometry(R+.52,R+.52,.48,96,1,true,arcStart,arcLen),mats.white);roof.position.y=11.55;root.add(roof);
 const base=new THREE.Mesh(new THREE.CylinderGeometry(R+.12,R+.12,.42,96,1,true,arcStart,arcLen),mats.trim);base.position.y=.35;root.add(base);
 function curvedWindow(theta,y,w=1.72,h=2.12){const x=(R+.055)*Math.sin(theta),z=(R+.055)*Math.cos(theta),g=new THREE.Group();g.position.set(x,y,z);g.rotation.y=theta;root.add(g);box(g,w,h,.14,-.02,0,mats.white);box(g,w-.22,h-.22,.035,-.02,.09,mats.glass);box(g,.065,h-.18,.045,-.02,.13,mats.frame);box(g,w-.18,.055,.045,-.02,.13,mats.frame);box(g,.045,h-.18,.05,-w*.25,.14,mats.frame);box(g,.045,h-.18,.05,w*.25,.14,mats.frame);box(g,w-.15,.07,.06,0,-h*.13,.16,mats.frame);box(g,w+.15,.10,.20,0,-h/2-.08,.05,mats.trim)}
 for(let row=0;row<3;row++)for(let i=0;i<9;i++)curvedWindow(arcStart+.16+i*(arcLen-.32)/8,1.42+row*3.66);
 for(let i=0;i<=8;i++){const a=arcStart+i*arcLen/8,x=(R+.12)*Math.sin(a),z=(R+.12)*Math.cos(a),p=box(root,.10,10.9,.11,x,5.75,z,new THREE.MeshStandardMaterial({color:0x77352d,roughness:.6}));p.rotation.y=a}
-box(root,9.2,11.3,9,-14.7,5.65,-3.5,mats.brick2);
+box(root,9.2,11.3,9,-14.7,5.65,-3.5,mats.brick2);\nbox(root,4.8,11.25,4.5,-12.25,5.65,2.65,mats.brick2);\nfor(const y of [2,5.7,9.4])box(root,4.9,.22,4.6,-12.25,y,2.65,mats.white);\nbox(root,5.0,.45,4.7,-12.25,11.35,2.65,mats.white);\n
 for(const y of [2,5.7,9.4])box(root,9.35,.22,9.15,-14.7,y,-3.5,mats.white);
 box(root,9.7,.5,9.5,-14.7,11.45,-3.5,mats.white);
 function flatWindow(x,y,z,w=1.45,h=2){const g=new THREE.Group();g.position.set(x,y,z);root.add(g);box(g,w,h,.16,0,0,0,mats.white);box(g,w-.2,h-.2,.04,0,0,.1,mats.glass);box(g,.055,h-.2,.05,0,0,.15,mats.frame);box(g,.05,h-.2,.05,-w*.25,0,.15,mats.frame);box(g,.05,h-.2,.05,w*.25,0,.15,mats.frame);box(g,w-.12,.06,.05,0,0,.15,mats.frame);box(g,w+.15,.1,.2,0,-h/2-.08,.04,mats.trim)}
