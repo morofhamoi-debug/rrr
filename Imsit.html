@@ -23,7 +23,7 @@ try {
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xa9b9c8);scene.fog=new THREE.Fog(0xa9b9c8,95,190);
 const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,400);camera.position.set(2,38,92);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;document.querySelector('#view').appendChild(renderer.domElement);
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.065;controls.target.set(-5,5,-3.5);controls.minDistance=12;controls.maxDistance=125;controls.maxPolarAngle=Math.PI*.49;
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.065;controls.target.set(-5.7,5.7,-4.0);controls.minDistance=12;controls.maxDistance=125;controls.maxPolarAngle=Math.PI*.49;
 scene.add(new THREE.HemisphereLight(0xe8f1ff,0x756354,1.65));
 const sun=new THREE.DirectionalLight(0xffe5c8,2.55);sun.position.set(-28,42,30);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-55;sun.shadow.camera.right=55;sun.shadow.camera.top=55;sun.shadow.camera.bottom=-55;sun.shadow.bias=-.00015;scene.add(sun);
 const fill=new THREE.DirectionalLight(0xc4dcf4,.8);fill.position.set(25,20,-30);scene.add(fill);
@@ -164,7 +164,8 @@ function pavilion(cx,cz,w,d){
  for(const fy of [.25,3.1,5.95])box(root,w-.22,.16,d-.22,cx,fy,cz,slabMat);
  hipRoof(cx,cz,w+.22,d+.22,8.75,2.05);
 }
-const R=13.35,roundX=9,roundZ=-2.3,roundH=11.4,roundY=5.7,wallT=.42,circleOpeningHalf=.31;
+const rightLegMidZ=-6.2; // середина правой ножки П в плане
+const R=13.35,roundX=9,roundZ=rightLegMidZ,roundH=11.4,roundY=5.7,wallT=.42,circleOpeningHalf=.31;
 function roundArc(radius,height,segments,material,y){
  const arcs=[[0,Math.PI-circleOpeningHalf],[Math.PI+circleOpeningHalf,Math.PI-circleOpeningHalf]];
  for(const [angle,length] of arcs){
@@ -199,12 +200,12 @@ for(let i=0;i<12;i++){
   const grill=box(root,.48,.23,.05,ac.position.x,wy,ac.position.z+Math.cos(a)*.19,mats.dark);grill.rotation.y=a;
  }
 }
-const leftWing={x:-25.2,z:-6.2,w:7.4,d:24.4},rightWing={x:-8.2,z:-6.2,w:7.4,d:24.4};
+const leftWing={x:-25.2,z:rightLegMidZ,w:7.7,d:29.4},rightWing={x:-8.2,z:rightLegMidZ,w:7.7,d:29.4};
 wingSide(leftWing.x,leftWing.z,leftWing.w,leftWing.d,1);
 wingSide(rightWing.x,rightWing.z,rightWing.w,rightWing.d,-1);
 const crossbarLeft=leftWing.x-leftWing.w/2+.1;
 const crossbarRight=roundX+Math.sin(circleOpeningHalf)*R;
-rearWing((crossbarLeft+crossbarRight)/2,-17.1,crossbarRight-crossbarLeft,7.2,true);
+rearWing((crossbarLeft+crossbarRight)/2,-16.9,crossbarRight-crossbarLeft,8.0,true);
 box(root,7.65,11.35,.72,leftWing.x,5.68,-15.8,mats.brick2);
 box(root,7.65,11.35,.72,rightWing.x,5.68,-15.8,mats.brick2);
 pavilion(-16.7,-7.0,7.8,6.4);
@@ -213,12 +214,12 @@ box(root,.28,3.4,3.8,-19.05,1.7,-12.2,mats.brick2);
 box(root,.28,3.4,3.8,-14.35,1.7,-12.2,mats.brick2);
 box(root,5.0,.24,4.0,-16.7,3.48,-12.2,mats.white);
 // Переход между правым крылом и круглым корпусом.
-box(root,3.5,11.4,6.4,-4.25,5.7,-2.0,mats.brick2);
-box(root,.055,11.0,5.8,-2.48,5.7,-2.0,mats.plaster);
-for(const yy of [2.02,5.72,9.42])box(root,3.65,.13,6.5,-4.25,yy,-2.0,mats.white);
-for(const yy of [1.42,5.12,8.82])for(const zz of [-3.8,-1.0])windowUnit(root,-2.42,yy,zz,1.42,2.02,Math.PI/2);
+box(root,3.5,11.4,6.4,-4.25,5.7,rightLegMidZ,mats.brick2);
+box(root,.055,11.0,5.8,-2.48,5.7,rightLegMidZ,mats.plaster);
+for(const yy of [2.02,5.72,9.42])box(root,3.65,.13,6.5,-4.25,yy,rightLegMidZ,mats.white);
+for(const yy of [1.42,5.12,8.82])for(const zz of [rightLegMidZ-1.8,rightLegMidZ+1.0])windowUnit(root,-2.42,yy,zz,1.42,2.02,Math.PI/2);
 // Башня у левого края круглого фасада.
-const tx=-3.35,tz=4.55;
+const tx=-3.35,tz=.65; // входная башня перемещена вместе с центром круглого корпуса
 box(root,5.25,15.35,4.85,tx,7.68,tz,mats.brick);
 box(root,5.60,.48,5.20,tx,15.42,tz,mats.white);box(root,5.42,.30,5.02,tx,.34,tz,mats.trim);
 for(const xx of [tx-2.28,tx+2.28])box(root,.46,14.65,.52,xx,7.62,tz+2.28,mats.white);
@@ -246,6 +247,9 @@ for(const xx of [gateX-2.05,gateX,gateX+2.05])box(root,.09,3.22,.12,xx,1.78,gate
 box(root,6.95,.24,1.4,gateX,3.72,gateZ+.55,mats.white);
 for(let i=0;i<4;i++)box(root,6.1-i*.28,.14,.52,gateX,.10+i*.14,gateZ+1.0+i*.46,mats.trim);
 
+// Единое увеличение архитектурной модели, а не цифровое приближение камеры.
+root.scale.setScalar(1.14);
+
 box(scene,220,.35,220,0,-.5,-3,mats.soil);
 box(scene,72,.16,7,0,-.30,-25.2,new THREE.MeshStandardMaterial({color:0x858780,roughness:1}));
 box(scene,72,.08,1.1,0,-.20,-21.0,mats.trim);
@@ -269,8 +273,8 @@ function bench(x,z){box(scene,2.8,.15,.55,x,.55,z,mats.dark);box(scene,2.8,.12,.
 bench(-17,10.6);bench(-25,-4);bench(2,8);
 function lamp(x,z){const post=new THREE.Mesh(new THREE.CylinderGeometry(.045,.07,3.6,10),mats.dark);post.position.set(x,1.8,z);scene.add(post);const globe=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),new THREE.MeshStandardMaterial({color:0xffedc6,emissive:0xffd88a,emissiveIntensity:.55}));globe.position.set(x,3.65,z);scene.add(globe)}
 lamp(-21,8.2);lamp(-12,8.2);lamp(20,7.8);
-const labels=new THREE.Group();scene.add(labels);function tag(txt,x,y,z){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.fillStyle='#101820cc';g.fillRect(0,0,512,128);g.fillStyle='white';g.font='bold 38px Arial';g.textAlign='center';g.fillText(txt,256,78);const t=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.position.set(x,y,z);s.scale.set(7,1.75,1);labels.add(s)}tag('ГЛАВНЫЙ ВХОД',gateX,4.4,gateZ+2);tag('КРУГЛЫЙ КОРПУС',9,14,9);tag('ВХОДНАЯ БАШНЯ',tx,18,tz);tag('ВНУТРЕННИЙ ДВОР',-16.7,3,-1);labels.visible=false;
-const target=new THREE.Vector3(-5,5,-3.5);function view(pos){camera.position.copy(pos);controls.target.copy(target);controls.update()}
+const labels=new THREE.Group();scene.add(labels);function tag(txt,x,y,z){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.fillStyle='#101820cc';g.fillRect(0,0,512,128);g.fillStyle='white';g.font='bold 38px Arial';g.textAlign='center';g.fillText(txt,256,78);const t=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.position.set(x,y,z);s.scale.set(7,1.75,1);labels.add(s)}tag('ГЛАВНЫЙ ВХОД',gateX,4.4,gateZ+2);tag('КРУГЛЫЙ КОРПУС',roundX,14,roundZ+12);tag('ВХОДНАЯ БАШНЯ',tx,18,tz);tag('ВНУТРЕННИЙ ДВОР',-16.7,3,-1);labels.visible=false;labels.scale.setScalar(1.14);
+const target=new THREE.Vector3(-5.7,5.7,-4.0);function view(pos){camera.position.copy(pos);controls.target.copy(target);controls.update()}
 document.querySelector('#front').onclick=()=>{view(new THREE.Vector3(2,38,92));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#front').classList.add('active')};document.querySelector('#orbit').onclick=()=>{view(new THREE.Vector3(45,38,58));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#orbit').classList.add('active')};document.querySelector('#top').onclick=()=>{view(new THREE.Vector3(-5,105,-3.5));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#top').classList.add('active')};document.querySelector('#reset').onclick=()=>{view(new THREE.Vector3(2,38,92));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'))};document.querySelector('#labels').onclick=e=>{labels.visible=!labels.visible;e.target.textContent='Подписи: '+(labels.visible?'вкл.':'выкл.');e.target.classList.toggle('active',labels.visible)};
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();
 }catch(err){console.error(err);const el=document.querySelector('#error');el.style.display='block';el.textContent='Не удалось запустить 3D: '+(err&&err.message?err.message:String(err))}
