@@ -12,7 +12,7 @@
 </head>
 <body>
 <div id="view"></div><div id="error"></div>
-<div class="panel"><h1>ИМСИТ · 3D ARCHITECTURE</h1><div class="sub">3D-реконструкция корпуса ИМСИТ. Верхняя перемычка П-образной части продолжена вправо и открыто соединена с круглым корпусом.</div></div>
+<div class="panel"><h1>ИМСИТ · 3D ARCHITECTURE</h1><div class="sub">Расширенная П-образная часть с длинной задней перемычкой, которая проходит вправо через свободный промежуток и входит в круглый корпус.</div></div>
 <div class="controls"><button id="front" class="active">Фасад</button><button id="orbit">Обзор 360°</button><button id="top">Сверху</button><button id="reset">Сбросить вид</button><button id="labels">Подписи: выкл.</button></div>
 <div class="hint">Вращение — проведи пальцем · Масштаб — щипок двумя пальцами · ПК — мышь</div>
 <script type="module">
@@ -96,11 +96,11 @@ function windowUnit(parent,x,y,z,w=1.48,h=2.02,rot=0){
  g.add(new THREE.Mesh(kit.glass,mats.glass),new THREE.Mesh(kit.frame,mats.frame),new THREE.Mesh(kit.sill,mats.trim));
  g.children.forEach(m=>{m.castShadow=true;m.receiveShadow=true;});parent.add(g);return g;
 }
-function wingSide(cx,cz,w,d,innerSign){
+function wingSide(cx,cz,w,d,innerSign,openBack=false){
  const h=11.4,th=.38,y=5.7,innerX=cx+innerSign*w/2,outerX=cx-innerSign*w/2,front=cz+d/2,back=cz-d/2;
  box(root,th,h,d,innerX,y,cz,mats.brick2);box(root,th,h,d,outerX,y,cz,mats.brick2);
  box(root,.055,h-.35,d-.50,innerX+innerSign*(th/2+.025),y,cz,mats.plaster);
- box(root,w,h,th,cx,y,front,mats.brick2);box(root,w,h,th,cx,y,back,mats.brick2);
+ box(root,w,h,th,cx,y,front,mats.brick2);if(!openBack)box(root,w,h,th,cx,y,back,mats.brick2);
  for(const fy of [.28,3.95,7.62])box(root,w-.22,.20,d-.22,cx,fy,cz,slabMat);
  const rows=[1.42,5.12,8.82],cols=5;
  for(let r=0;r<3;r++)for(let j=0;j<cols;j++){
@@ -109,7 +109,7 @@ function wingSide(cx,cz,w,d,innerSign){
   windowUnit(root,outerX-innerSign*(th/2+.08),rows[r],zz,1.48,2.02,-innerSign*Math.PI/2);
  }
  for(const xx of [innerX,outerX])for(const yy of [2.02,5.72,9.42])box(root,th+.12,.13,d+.05,xx,yy,cz,mats.white);
- box(root,w+.28,.26,.20,cx,11.42,front,mats.white);box(root,w+.28,.26,.20,cx,11.42,back,mats.white);
+ box(root,w+.28,.26,.20,cx,11.42,front,mats.white);if(!openBack)box(root,w+.28,.26,.20,cx,11.42,back,mats.white);
  hipRoof(cx,cz,w+.24,d+.24,11.52,2.75);
 }
 function rearWing(cx,cz,w,d,joinCircle=false){
@@ -164,8 +164,8 @@ function pavilion(cx,cz,w,d){
  for(const fy of [.25,3.1,5.95])box(root,w-.22,.16,d-.22,cx,fy,cz,slabMat);
  hipRoof(cx,cz,w+.22,d+.22,8.75,2.05);
 }
-const rightLegMidZ=-6.2; // середина правой ножки П в плане
-const R=13.35,roundX=9,roundZ=rightLegMidZ,roundH=11.4,roundY=5.7,wallT=.42,circleOpeningHalf=.31;
+const rightLegMidZ=-6.2; // круглый корпус сохраняет уровень середины правой ножки в плане
+const R=13.35,roundX=14.5,roundZ=rightLegMidZ,roundH=11.4,roundY=5.7,wallT=.42,circleOpeningHalf=.31;
 function roundArc(radius,height,segments,material,y){
  const arcs=[[0,Math.PI-circleOpeningHalf],[Math.PI+circleOpeningHalf,Math.PI-circleOpeningHalf]];
  for(const [angle,length] of arcs){
@@ -200,13 +200,19 @@ for(let i=0;i<12;i++){
   const grill=box(root,.48,.23,.05,ac.position.x,wy,ac.position.z+Math.cos(a)*.19,mats.dark);grill.rotation.y=a;
  }
 }
-const leftWing={x:-25.2,z:rightLegMidZ,w:7.7,d:29.4},rightWing={x:-8.2,z:rightLegMidZ,w:7.7,d:29.4};
-wingSide(leftWing.x,leftWing.z,leftWing.w,leftWing.d,1);
-wingSide(rightWing.x,rightWing.z,rightWing.w,rightWing.d,-1);
+const leftWing={x:-27.2,z:rightLegMidZ,w:7.7,d:29.4},rightWing={x:-6.2,z:rightLegMidZ,w:7.7,d:29.4};
+// Оба крыла открыты с задней стороны: поперечная часть входит в них без глухих торцевых стен.
+wingSide(leftWing.x,leftWing.z,leftWing.w,leftWing.d,1,true);
+wingSide(rightWing.x,rightWing.z,rightWing.w,rightWing.d,-1,true);
 const crossbarLeft=leftWing.x-leftWing.w/2+.1;
 const crossbarRight=roundX+Math.sin(circleOpeningHalf)*R;
-// Задняя перемычка заканчивается точно в плоскости южного проёма круглого корпуса.
-// Плоскость стыка проходит по хорде между концами выреза в окружности.
+const rightLegOuterX=rightWing.x+rightWing.w/2;
+const circleLeftEdge=roundX-R;
+const circleClearance=circleLeftEdge-rightLegOuterX;
+if(circleClearance<3.5)throw new Error("Недостаточный зазор между правой ножкой П и круглым корпусом");
+if(crossbarRight<=rightLegOuterX)throw new Error("Задняя перемычка не продолжается за правую ножку");
+// Перемычка проходит за правой ножкой и входит точно в южный проём круглого корпуса.
+// Стык выполнен по хорде проёма, а не отдельным боковым блоком между корпусами.
 const circleJoinZ=roundZ-R*Math.cos(circleOpeningHalf);
 rearWing((crossbarLeft+crossbarRight)/2,circleJoinZ-4.0,crossbarRight-crossbarLeft,8.0,true);
 box(root,7.65,11.35,.72,leftWing.x,5.68,-15.8,mats.brick2);
@@ -216,13 +222,10 @@ box(root,4.7,3.4,.28,-16.7,1.7,-10.35,mats.brick2);
 box(root,.28,3.4,3.8,-19.05,1.7,-12.2,mats.brick2);
 box(root,.28,3.4,3.8,-14.35,1.7,-12.2,mats.brick2);
 box(root,5.0,.24,4.0,-16.7,3.48,-12.2,mats.white);
-// Переход между правым крылом и круглым корпусом.
-box(root,3.5,11.4,6.4,-4.25,5.7,rightLegMidZ,mats.brick2);
-box(root,.055,11.0,5.8,-2.48,5.7,rightLegMidZ,mats.plaster);
-for(const yy of [2.02,5.72,9.42])box(root,3.65,.13,6.5,-4.25,yy,rightLegMidZ,mats.white);
-for(const yy of [1.42,5.12,8.82])for(const zz of [rightLegMidZ-1.8,rightLegMidZ+1.0])windowUnit(root,-2.42,yy,zz,1.42,2.02,Math.PI/2);
+// Между наружной стеной правой ножки и круглым корпусом оставлен открытый архитектурный промежуток.
+// Их единственное соединение — продолженная задняя перемычка, входящая в круглый корпус.
 // Башня у левого края круглого фасада.
-const tx=-3.35,tz=.65; // входная башня перемещена вместе с центром круглого корпуса
+const tx=roundX-12.35,tz=.65; // входная башня сохраняет исходное положение относительно круглого корпуса
 box(root,5.25,15.35,4.85,tx,7.68,tz,mats.brick);
 box(root,5.60,.48,5.20,tx,15.42,tz,mats.white);box(root,5.42,.30,5.02,tx,.34,tz,mats.trim);
 for(const xx of [tx-2.28,tx+2.28])box(root,.46,14.65,.52,xx,7.62,tz+2.28,mats.white);
@@ -277,7 +280,7 @@ bench(-17,10.6);bench(-25,-4);bench(2,8);
 function lamp(x,z){const post=new THREE.Mesh(new THREE.CylinderGeometry(.045,.07,3.6,10),mats.dark);post.position.set(x,1.8,z);scene.add(post);const globe=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),new THREE.MeshStandardMaterial({color:0xffedc6,emissive:0xffd88a,emissiveIntensity:.55}));globe.position.set(x,3.65,z);scene.add(globe)}
 lamp(-21,8.2);lamp(-12,8.2);lamp(20,7.8);
 const labels=new THREE.Group();scene.add(labels);function tag(txt,x,y,z){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.fillStyle='#101820cc';g.fillRect(0,0,512,128);g.fillStyle='white';g.font='bold 38px Arial';g.textAlign='center';g.fillText(txt,256,78);const t=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.position.set(x,y,z);s.scale.set(7,1.75,1);labels.add(s)}tag('ГЛАВНЫЙ ВХОД',gateX,4.4,gateZ+2);tag('КРУГЛЫЙ КОРПУС',roundX,14,roundZ+12);tag('ВХОДНАЯ БАШНЯ',tx,18,tz);tag('ВНУТРЕННИЙ ДВОР',-16.7,3,-1);labels.visible=false;labels.scale.setScalar(1.14);
-const target=new THREE.Vector3(-5.7,5.7,-4.0);function view(pos){camera.position.copy(pos);controls.target.copy(target);controls.update()}
+const target=new THREE.Vector3(-1.6,5.7,-4.0);function view(pos){camera.position.copy(pos);controls.target.copy(target);controls.update()}
 document.querySelector('#front').onclick=()=>{view(new THREE.Vector3(2,38,92));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#front').classList.add('active')};document.querySelector('#orbit').onclick=()=>{view(new THREE.Vector3(45,38,58));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#orbit').classList.add('active')};document.querySelector('#top').onclick=()=>{view(new THREE.Vector3(-5,105,-3.5));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#top').classList.add('active')};document.querySelector('#reset').onclick=()=>{view(new THREE.Vector3(2,38,92));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'))};document.querySelector('#labels').onclick=e=>{labels.visible=!labels.visible;e.target.textContent='Подписи: '+(labels.visible?'вкл.':'выкл.');e.target.classList.toggle('active',labels.visible)};
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();
 }catch(err){console.error(err);const el=document.querySelector('#error');el.style.display='block';el.textContent='Не удалось запустить 3D: '+(err&&err.message?err.message:String(err))}
