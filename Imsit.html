@@ -206,7 +206,8 @@ wingSide(rightWing.x,rightWing.z,rightWing.w,rightWing.d,-1);
 const crossbarLeft=leftWing.x-leftWing.w/2+.1;
 const crossbarRight=roundX+Math.sin(circleOpeningHalf)*R;
 // Задняя перемычка заканчивается точно в плоскости южного проёма круглого корпуса.
-const circleJoinZ=roundZ-R;
+// Плоскость стыка проходит по хорде между концами выреза в окружности.
+const circleJoinZ=roundZ-R*Math.cos(circleOpeningHalf);
 rearWing((crossbarLeft+crossbarRight)/2,circleJoinZ-4.0,crossbarRight-crossbarLeft,8.0,true);
 box(root,7.65,11.35,.72,leftWing.x,5.68,-15.8,mats.brick2);
 box(root,7.65,11.35,.72,rightWing.x,5.68,-15.8,mats.brick2);
