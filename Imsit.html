@@ -31,14 +31,33 @@ const bt=brickTexture('#874638','#b99a89'),bt2=brickTexture('#794337','#b39282')
 const mats={brick:new THREE.MeshStandardMaterial({map:bt,bumpMap:bt,bumpScale:.035,roughness:.94}),brick2:new THREE.MeshStandardMaterial({map:bt2,bumpMap:bt2,bumpScale:.03,roughness:.95}),white:new THREE.MeshStandardMaterial({color:0xe9e8e1,roughness:.55}),plaster:new THREE.MeshStandardMaterial({color:0xf3f1eb,roughness:.96}),trim:new THREE.MeshStandardMaterial({color:0xc9c9c2,roughness:.55}),glass:new THREE.MeshPhysicalMaterial({color:0x263d4c,metalness:.34,roughness:.17,transparent:true,opacity:.9,clearcoat:1}),frame:new THREE.MeshStandardMaterial({color:0xf0f1ed,roughness:.42,metalness:.12}),dark:new THREE.MeshStandardMaterial({color:0x242a2d,roughness:.72}),ground:new THREE.MeshStandardMaterial({color:0x777a75,roughness:1}),soil:new THREE.MeshStandardMaterial({color:0x77705f,roughness:1})};
 const root=new THREE.Group();scene.add(root);
 function box(parent,w,h,d,x,y,z,mat){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
-function cylinderArc(radius,height,thickness,start,length,y,mat){const outer=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,160,1,true,start,length),mat);outer.position.y=y;outer.castShadow=true;outer.receiveShadow=true;root.add(outer);const inner=new THREE.Mesh(new THREE.CylinderGeometry(radius-thickness,radius-thickness,height,160,1,true,start,length),mats.plaster);inner.position.y=y;inner.castShadow=true;inner.receiveShadow=true;root.add(inner);for(const a of [start,start+length]){const x=(radius-thickness/2)*Math.sin(a),z=(radius-thickness/2)*Math.cos(a);const cap=box(root,thickness,height,.18,x,y,z,mat);cap.rotation.y=a}return {radius,start,length}}
+function cylinderArc(radius,height,thickness,start,length,y,mat){
+  const mid=start+length/2,gap=.34,upperHeight=height-3.55,upperY=y+3.55/2;
+  function arcPart(r,h,angle,span,cy,material){
+    if(span<=0)return;
+    const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,96,1,true,angle,span),material);
+    mesh.position.y=cy;mesh.castShadow=true;mesh.receiveShadow=true;root.add(mesh);
+  }
+  // Нижний центральный сектор оставлен открытым под настоящий входной проём.
+  for(const r of [radius,radius-thickness]){
+    const material=r===radius?mat:mats.plaster;
+    arcPart(r,height,start,mid-gap/2-start,y,material);
+    arcPart(r,height,mid+gap/2,length-(mid+gap/2-start),y,material);
+    arcPart(r,upperHeight,mid-gap/2,gap,upperY,material);
+  }
+  for(const angle of [start,start+length]){
+    const x=(radius-thickness/2)*Math.sin(angle),z=(radius-thickness/2)*Math.cos(angle);
+    const cap=box(root,thickness,height,.18,x,y,z,mat);cap.rotation.y=angle;
+  }
+  return {radius,start,length};
+}
 const R=13.4,A=-1.20,L=2.4;
 cylinderArc(R,11.4,.42,A,L,5.7,mats.brick);
 for(const y of [2.05,5.75,9.45]){const band=new THREE.Mesh(new THREE.CylinderGeometry(R+.10,R+.10,.20,160,1,true,A,L),mats.white);band.position.y=y;root.add(band)}
 const roof=new THREE.Mesh(new THREE.CylinderGeometry(R+.48,R+.48,.48,160,1,true,A,L),mats.white);roof.position.y=11.55;root.add(roof);
 const plinth=new THREE.Mesh(new THREE.CylinderGeometry(R+.12,R+.12,.38,160,1,true,A,L),mats.trim);plinth.position.y=.34;root.add(plinth);
 function curvedWindow(a,y,w=1.72,h=2.08){const x=(R+.06)*Math.sin(a),z=(R+.06)*Math.cos(a),g=new THREE.Group();g.position.set(x,y,z);g.rotation.y=a;root.add(g);box(g,w,h,.14,0,0,0,mats.white);box(g,w-.22,h-.22,.035,0,0,.09,mats.glass);box(g,.055,h-.18,.045,0,0,.14,mats.frame);box(g,w-.18,.055,.045,0,0,.14,mats.frame);box(g,.045,h-.18,.05,-w*.25,0,.15,mats.frame);box(g,.045,h-.18,.05,w*.25,0,.15,mats.frame);box(g,w-.14,.07,.06,0,-h*.13,.16,mats.frame);box(g,w+.15,.10,.2,0,-h/2-.08,.05,mats.trim)}
-for(let row=0;row<3;row++)for(let i=0;i<9;i++)curvedWindow(A+.15+i*(L-.3)/8,1.42+row*3.66);
+for(let row=0;row<3;row++)for(let i=0;i<9;i++){if(row===0&&i===4)continue;curvedWindow(A+.15+i*(L-.3)/8,1.42+row*3.66);}
 for(let i=0;i<=8;i++){const a=A+i*L/8,x=(R+.13)*Math.sin(a),z=(R+.13)*Math.cos(a),p=box(root,.10,10.9,.11,x,5.75,z,new THREE.MeshStandardMaterial({color:0x77372f,roughness:.62}));p.rotation.y=a}
 // Соединённый U-образный корпус: две продольные секции и задняя перемычка.
 function windowUnit(px,py,pz,ww,hh,rot){
