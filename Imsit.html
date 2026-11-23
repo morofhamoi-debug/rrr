@@ -31,12 +31,12 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 try {
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9eafc0);scene.fog=new THREE.Fog(0x9eafc0,65,145);
-const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,300);camera.position.set(25,17,37);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,300);camera.position.set(27,19,43);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.querySelector('#view').appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.target.set(0,5,0);controls.minDistance=12;controls.maxDistance=85;controls.maxPolarAngle=Math.PI*.49;
-scene.add(new THREE.HemisphereLight(0xe6f1ff,0x6b5947,2));
-const sun=new THREE.DirectionalLight(0xffe5c4,3.2);sun.position.set(-22,35,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-38;sun.shadow.camera.right=38;sun.shadow.camera.top=38;sun.shadow.camera.bottom=-38;scene.add(sun);
-const fill=new THREE.DirectionalLight(0xb9d7ff,1);fill.position.set(22,18,-20);scene.add(fill);
+scene.add(new THREE.HemisphereLight(0xe6f1ff,0x6b5947,1.55));
+const sun=new THREE.DirectionalLight(0xffe5c4,2.7);sun.position.set(-22,35,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-38;sun.shadow.camera.right=38;sun.shadow.camera.top=38;sun.shadow.camera.bottom=-38;scene.add(sun);
+const fill=new THREE.DirectionalLight(0xb9d7ff,.75);fill.position.set(22,18,-20);scene.add(fill);
 const mats={brick:new THREE.MeshStandardMaterial({color:0x783d32,roughness:.88}),brick2:new THREE.MeshStandardMaterial({color:0x8b4b3e,roughness:.9}),white:new THREE.MeshStandardMaterial({color:0xe6e5df,roughness:.48}),trim:new THREE.MeshStandardMaterial({color:0xc9c9c2,roughness:.55}),glass:new THREE.MeshPhysicalMaterial({color:0x243b4c,metalness:.42,roughness:.16,transparent:true,opacity:.88,clearcoat:1}),frame:new THREE.MeshStandardMaterial({color:0xe9eceb,roughness:.42,metalness:.18}),dark:new THREE.MeshStandardMaterial({color:0x242a2d,roughness:.7}),pavement:new THREE.MeshStandardMaterial({color:0x777a76,roughness:1}),soil:new THREE.MeshStandardMaterial({color:0x51483d,roughness:1})};
 const root=new THREE.Group();scene.add(root);
 function box(parent,w,h,d,x,y,z,mat){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
@@ -54,14 +54,14 @@ for(const y of [2,5.7,9.4])box(root,9.35,.22,9.15,-14.7,y,-3.5,mats.white);
 box(root,9.7,.5,9.5,-14.7,11.45,-3.5,mats.white);
 function flatWindow(x,y,z,w=1.45,h=2){const g=new THREE.Group();g.position.set(x,y,z);root.add(g);box(g,w,h,.16,0,0,0,mats.white);box(g,w-.2,h-.2,.04,0,0,.1,mats.glass);box(g,.055,h-.2,.05,0,0,.15,mats.frame);box(g,.05,h-.2,.05,-w*.25,0,.15,mats.frame);box(g,.05,h-.2,.05,w*.25,0,.15,mats.frame);box(g,w-.12,.06,.05,0,0,.15,mats.frame);box(g,w+.15,.1,.2,0,-h/2-.08,.04,mats.trim)}
 for(let row=0;row<3;row++)for(let col=0;col<3;col++)flatWindow(-17.7+col*3,row*3.65+1.4,1.08);
-box(root,5.1,15.4,4.5,-8.1,7.7,4.7,mats.brick);box(root,5.45,.48,4.9,-8.1,15.35,4.7,mats.white);box(root,5.25,.32,4.7,-8.1,.35,4.7,mats.trim);
+box(root,5.1,15.4,4.5,-8.1,7.7,9.2,mats.brick);box(root,5.45,.48,4.9,-8.1,15.35,9.2,mats.white);box(root,5.25,.32,4.7,-8.1,.35,9.2,mats.trim);
 for(const x of [-10.35,-5.85])box(root,.48,14.7,.55,x,7.65,7,mats.white);
 box(root,3.05,12,.18,-8.1,6.45,7.02,mats.glass);
 for(const y of [1.5,3.5,5.5,7.5,9.5,11.5])box(root,3.1,.11,.22,-8.1,y,7.14,mats.frame);
-box(root,.12,12,.22,-8.1,6.45,7.16,mats.frame);box(root,6.2,.7,5.5,-8.1,15.75,4.7,mats.white);box(root,4.8,.72,.18,-8.1,16.05,7.08,mats.white);
+box(root,.12,12,.22,-8.1,6.45,7.16,mats.frame);box(root,6.2,.7,5.5,-8.1,15.75,9.2,mats.white);box(root,4.8,.72,.18,-8.1,16.05,11.58,mats.white);
 function textPlane(text,x,y,z,w,h,color='#f2f0e9',font='900 110px Arial'){const c=document.createElement('canvas');c.width=1024;c.height=320;const ctx=c.getContext('2d');ctx.fillStyle=color;ctx.font=font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,512,160);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide}));m.position.set(x,y,z);root.add(m);return m}
-textPlane('ИМСИТ',-8.1,16.1,7.22,3.0,.75,'#174f8d');textPlane('АКАДЕМИЯ МАРКЕТИНГА',-8.1,13.25,7.04,4.5,1.2);
-textPlane('СОЦИАЛЬНО-ИНФОРМАЦИОННЫХ ТЕХНОЛОГИЙ',-8.1,12.35,7.04,4.3,.55);
+textPlane('ИМСИТ',-8.1,16.1,11.72,3.0,.75,'#174f8d');textPlane('АКАДЕМИЯ МАРКЕТИНГА',-8.1,13.25,11.54,4.5,1.2);
+textPlane('СОЦИАЛЬНО-ИНФОРМАЦИОННЫХ ТЕХНОЛОГИЙ',-8.1,12.35,11.54,4.3,.55);
 box(root,3.4,2.8,.22,-14.7,1.55,1.12,mats.glass);box(root,3.7,.18,.7,-14.7,3.05,1.35,mats.white);
 for(let i=0;i<3;i++)box(root,.07,2.75,.08,-15.8+i*1.1,1.55,1.27,mats.frame);
 box(scene,180,.3,180,0,-.45,0,mats.soil);box(scene,55,.12,38,-5,-.22,12,mats.pavement);
@@ -74,7 +74,7 @@ for(let i=0;i<3;i++)box(root,5-i*.35,.18,.65,-14.7,.05+i*.18,2.2+i*.55,mats.trim
 const labelGroup=new THREE.Group();scene.add(labelGroup);
 function tag(text,x,y,z){const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#101820cc';ctx.fillRect(0,0,512,128);ctx.fillStyle='white';ctx.font='bold 38px Arial';ctx.textAlign='center';ctx.fillText(text,256,78);const t=new THREE.CanvasTexture(c);const m=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));m.position.set(x,y,z);m.scale.set(7,1.75,1);labelGroup.add(m)}
 tag('ГЛАВНЫЙ ВХОД',-14.7,4.3,3);tag('ЗАКРУГЛЁННЫЙ ФАСАД',4,13,10);tag('ВХОДНАЯ БАШНЯ',-8,18,8);labelGroup.visible=false;
-const targetFront=new THREE.Vector3(0,5,0);function setView(pos){camera.position.copy(pos);controls.target.copy(targetFront);controls.update()}
+const targetFront=new THREE.Vector3(-1,7,2);function setView(pos){camera.position.copy(pos);controls.target.copy(targetFront);controls.update()}
 document.querySelector('#front').onclick=()=>{setView(new THREE.Vector3(0,13,43));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#front').classList.add('active')};
 document.querySelector('#orbit').onclick=()=>{setView(new THREE.Vector3(29,17,27));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#orbit').classList.add('active')};
 document.querySelector('#reset').onclick=()=>{setView(new THREE.Vector3(25,17,37));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'))};
