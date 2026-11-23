@@ -21,9 +21,9 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 try {
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xa9b9c8);scene.fog=new THREE.Fog(0xa9b9c8,95,190);
-const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,400);camera.position.set(2,25,58);
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,400);camera.position.set(2,38,92);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;document.querySelector('#view').appendChild(renderer.domElement);
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.065;controls.target.set(-5,5,-3.5);controls.minDistance=12;controls.maxDistance=110;controls.maxPolarAngle=Math.PI*.49;
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.065;controls.target.set(-5,5,-3.5);controls.minDistance=12;controls.maxDistance=125;controls.maxPolarAngle=Math.PI*.49;
 scene.add(new THREE.HemisphereLight(0xe8f1ff,0x756354,1.65));
 const sun=new THREE.DirectionalLight(0xffe5c8,2.55);sun.position.set(-28,42,30);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-55;sun.shadow.camera.right=55;sun.shadow.camera.top=55;sun.shadow.camera.bottom=-55;sun.shadow.bias=-.00015;scene.add(sun);
 const fill=new THREE.DirectionalLight(0xc4dcf4,.8);fill.position.set(25,20,-30);scene.add(fill);
@@ -151,6 +151,10 @@ for(const yy of [2.05,5.75,9.45]){const band=new THREE.Mesh(new THREE.CylinderGe
 const roundBase=new THREE.Mesh(new THREE.CylinderGeometry(R+.14,R+.14,.34,144,1,true),mats.trim);roundBase.position.set(roundX,.34,roundZ);root.add(roundBase);
 const roundCornice=new THREE.Mesh(new THREE.CylinderGeometry(R+.43,R+.43,.44,144,1,true),mats.white);roundCornice.position.set(roundX,11.62,roundZ);roundCornice.castShadow=true;root.add(roundCornice);
 const roundRoof=new THREE.Mesh(new THREE.CylinderGeometry(R+.43,R+.43,.18,144,1,false),mats.white);roundRoof.position.set(roundX,11.92,roundZ);roundRoof.receiveShadow=true;root.add(roundRoof);
+for(const fy of [.26,3.96,7.66]){
+ const floorDisk=new THREE.Mesh(new THREE.CylinderGeometry(R-wallT-.09,R-wallT-.09,.18,128,1,false),slabMat);
+ floorDisk.position.set(roundX,fy,roundZ);floorDisk.receiveShadow=true;root.add(floorDisk);
+}
 for(let row=0;row<3;row++)for(let i=0;i<16;i++){
  const a=(i/16)*Math.PI*2,px=roundX+(R+.075)*Math.sin(a),pz=roundZ+(R+.075)*Math.cos(a);
  if(px<1.1&&pz>1.0&&pz<7.8)continue;
@@ -234,7 +238,7 @@ function lamp(x,z){const post=new THREE.Mesh(new THREE.CylinderGeometry(.045,.07
 lamp(-21,8.2);lamp(-12,8.2);lamp(20,7.8);
 const labels=new THREE.Group();scene.add(labels);function tag(txt,x,y,z){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.fillStyle='#101820cc';g.fillRect(0,0,512,128);g.fillStyle='white';g.font='bold 38px Arial';g.textAlign='center';g.fillText(txt,256,78);const t=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.position.set(x,y,z);s.scale.set(7,1.75,1);labels.add(s)}tag('ГЛАВНЫЙ ВХОД',gateX,4.4,gateZ+2);tag('КРУГЛЫЙ КОРПУС',9,14,9);tag('ВХОДНАЯ БАШНЯ',tx,18,tz);tag('ВНУТРЕННИЙ ДВОР',-16.7,3,-1);labels.visible=false;
 const target=new THREE.Vector3(-5,5,-3.5);function view(pos){camera.position.copy(pos);controls.target.copy(target);controls.update()}
-document.querySelector('#front').onclick=()=>{view(new THREE.Vector3(2,18,58));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#front').classList.add('active')};document.querySelector('#orbit').onclick=()=>{view(new THREE.Vector3(46,26,31));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#orbit').classList.add('active')};document.querySelector('#top').onclick=()=>{view(new THREE.Vector3(-5,82,-3.5));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#top').classList.add('active')};document.querySelector('#reset').onclick=()=>{view(new THREE.Vector3(2,25,58));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'))};document.querySelector('#labels').onclick=e=>{labels.visible=!labels.visible;e.target.textContent='Подписи: '+(labels.visible?'вкл.':'выкл.');e.target.classList.toggle('active',labels.visible)};
+document.querySelector('#front').onclick=()=>{view(new THREE.Vector3(2,38,92));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#front').classList.add('active')};document.querySelector('#orbit').onclick=()=>{view(new THREE.Vector3(45,38,58));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#orbit').classList.add('active')};document.querySelector('#top').onclick=()=>{view(new THREE.Vector3(-5,105,-3.5));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));document.querySelector('#top').classList.add('active')};document.querySelector('#reset').onclick=()=>{view(new THREE.Vector3(2,38,92));document.querySelectorAll('button').forEach(b=>b.classList.remove('active'))};document.querySelector('#labels').onclick=e=>{labels.visible=!labels.visible;e.target.textContent='Подписи: '+(labels.visible?'вкл.':'выкл.');e.target.classList.toggle('active',labels.visible)};
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();
 }catch(err){console.error(err);const el=document.querySelector('#error');el.style.display='block';el.textContent='Не удалось запустить 3D: '+(err&&err.message?err.message:String(err))}
 </script>
