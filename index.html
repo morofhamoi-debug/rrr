@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b10">
+  <meta name="description" content="MORO — простой язык программирования на понятном русском языке.">
+  <title>MORO — язык, который понимает тебя</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="MORO">
+        <span class="brand-mark">m</span>
+        <span>MORO<span class="brand-dot">.</span></span>
+        <span class="brand-tag">PLAYGROUND</span>
+      </a>
+      <div class="top-actions">
+        <span class="status"><i></i> Локальный запуск</span>
+        <a class="github-link" href="https://github.com/morofhamoi-debug/rrr" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div class="eyebrow">ТВОЯ ИДЕЯ → ТВОЯ ПРОГРАММА</div>
+        <h1>Программируй <span>своими словами.</span></h1>
+        <p>Не нужно учить сложный код. Напиши, что должно быть на странице, и нажми «Запустить».</p>
+      </section>
+
+      <section class="workspace" aria-label="Редактор MORO">
+        <div class="panel editor-panel">
+          <div class="panel-head">
+            <div class="panel-title"><span class="file-icon">M</span><span>Моя программа</span><span class="file-pill">.moro</span></div>
+            <button class="text-button" id="resetBtn" type="button">Сбросить</button>
+          </div>
+          <div class="editor-wrap">
+            <div class="line-numbers" id="lineNumbers" aria-hidden="true">1</div>
+            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Код на языке MORO"></textarea>
+          </div>
+          <div class="editor-footer">
+            <span><span class="key-hint">MORO</span> Русский синтаксис</span>
+            <span id="lineCount">1 строка</span>
+          </div>
+          <div class="run-row">
+            <button class="run-button" id="runBtn" type="button"><span>▶</span> Запустить</button>
+            <span class="run-note">Результат появится справа</span>
+          </div>
+        </div>
+
+        <div class="panel preview-panel">
+          <div class="panel-head">
+            <div class="panel-title"><span class="preview-dot"></span>Предпросмотр</div>
+            <span class="live-label"><i></i> LIVE</span>
+          </div>
+          <div class="preview-stage">
+            <iframe id="preview" title="Предпросмотр программы MORO" sandbox="allow-scripts"></iframe>
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon">✳</div>
+              <strong>Здесь появится твой результат</strong>
+              <span>Измени программу и нажми «Запустить»</span>
+            </div>
+          </div>
+          <div class="console" aria-live="polite">
+            <div class="console-head"><span>ВЫВОД</span><span id="runStatus">Ожидание запуска</span></div>
+            <div id="output" class="console-output">Твоя программа ещё не запускалась.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="below-grid">
+        <div class="section-heading">
+          <div><div class="eyebrow">НАЧНИ С ПРОСТОГО</div><h2>Попробуй примеры</h2></div>
+          <span class="section-caption">Нажми на пример, чтобы загрузить его в редактор</span>
+        </div>
+        <div class="examples">
+          <button class="example-card" data-example="button" type="button">
+            <span class="example-icon purple">▣</span><span><strong>Кнопка</strong><small>Создай кнопку с действием</small></span><span class="example-arrow">↗</span>
+          </button>
+          <button class="example-card" data-example="page" type="button">
+            <span class="example-icon blue">▤</span><span><strong>Страница</strong><small>Собери простую страницу</small></span><span class="example-arrow">↗</span>
+          </button>
+          <button class="example-card" data-example="image" type="button">
+            <span class="example-icon orange">▧</span><span><strong>Картинка</strong><small>Добавь изображение</small></span><span class="example-arrow">↗</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="syntax-section">
+        <div class="syntax-copy"><div class="eyebrow">ПОНЯТНО С ПЕРВОГО ВЗГЛЯДА</div><h2>Пиши как тебе удобно</h2><p>Можно описывать элемент по строкам или коротко — в одной строке. MORO сам разберёт знакомые конструкции.</p></div>
+        <div class="syntax-card">
+          <div class="syntax-top"><span>ПРИМЕР MORO</span><span class="syntax-lang">RU</span></div>
+          <pre>Кнопка (центр)
+Текст: «Привет»
+При нажатии: показать «Добро пожаловать!»</pre>
+          <div class="syntax-bottom"><span class="check">✓</span> Без скобок, сложных формул и точек с запятой</div>
+        </div>
+      </section>
+    </main>
+    <footer><span class="footer-brand">MORO<span>.</span></span><span>Первая версия · Язык растёт вместе с тобой</span><a href="https://github.com/morofhamoi-debug/rrr" target="_blank" rel="noreferrer">Открыть исходный код ↗</a></footer>
+  </div>
+  <script src="language/interpreter.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
