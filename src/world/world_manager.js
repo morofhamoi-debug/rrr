@@ -1,0 +1,24 @@
+import { TerrainManager } from './terrain/terrain_manager.js';
+import { RoadManager } from './roads/road_manager.js';
+import { GrassManager } from './vegetation/grass_manager.js';
+import { Sky } from './environment/sky.js';
+import { Clouds } from './environment/clouds.js';
+import { Lighting } from './environment/lighting.js';
+import { Weather } from './environment/weather.js';
+export class WorldManager{
+ constructor(scene){
+  this.scene=scene;this.terrain=new TerrainManager(scene);this.roads=new RoadManager(scene);
+  this.grass=new GrassManager(scene,this.roads);this.sky=new Sky(scene);this.clouds=new Clouds(scene);
+  this.lighting=new Lighting(scene);this.weather=new Weather();this.settings={};this.windSpeed=this.weather.windSpeed;
+ }
+ init(settings){this.scene.background=null;this.scene.fog=null;this.roads.init();this.applySettings(settings);this.terrain.update({x:22,z:78});this.grass.update({x:22,z:78},0);}
+ heightAt(x,z){return this.terrain.heightAt(x,z);}
+ applySettings(settings){this.settings=settings;this.terrain.setSettings(settings);this.grass.setSettings(settings);this.lighting.setQuality(settings);}
+ update(dt,camera){
+  this.weather.update(dt);this.windSpeed=this.weather.windSpeed;this.terrain.update(camera.position);
+  this.grass.update(camera.position,dt);this.clouds.update(dt);this.sky.update(camera,this.weather.time);
+  this.lighting.update(this.weather.time,camera.position);
+ }
+ advanceTime(hours){this.weather.advance(hours);}
+ getTime(){return this.weather.time;}
+}
