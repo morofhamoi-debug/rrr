@@ -3,7 +3,7 @@
 
   var root = document.getElementById('viewRoot');
   var toastRoot = document.getElementById('toastRoot');
-  var STORAGE_KEY = 'horror-game-demo-v1'; // сохраняем совместимость со старым локальным профилем
+  var STORAGE_KEY = 'horror-game-demo-v1'; // legacy key: сохраняет ранее созданный локальный профиль
   var GAME_NAMES = { mines: 'Mines', crash: 'Crash', dice: 'Dice', plinko: 'Plinko', wheel: 'Wheel', cases: 'Cases', coinflip: 'Coinflip' };
   var GAME_ICONS = { mines: '▦', crash: '↗', dice: '⚄', plinko: '⠿', wheel: '◉', cases: '▣', coinflip: '◒' };
   var defaultState = {
@@ -104,7 +104,7 @@
     var avatar = document.getElementById('topAvatar');
     if (balance) balance.textContent = money(state.balance);
     if (name) name.textContent = state.username || 'Игрок';
-    if (avatar) avatar.textContent = (state.username || 'H').trim().charAt(0).toUpperCase() || 'H';
+    if (avatar) avatar.textContent = (state.username || '1').trim().charAt(0).toUpperCase() || 'H';
   }
 
   function updateNav() {
@@ -164,7 +164,7 @@
   }
 
   function commonAside(extra) {
-    return '</div></section><aside class="game-aside">' + extra + '<div class="side-note"><strong>Виртуальный режим</strong>Кредиты существуют только внутри этого браузера. Их нельзя купить, вывести или обменять на деньги.</div></aside></div>';
+    return '</div></section><aside class="game-aside">' + extra + '<div class="side-note"><strong>Виртуальный режим</strong>Виртуальные ₽ существуют только внутри этого браузера. Их нельзя купить, вывести или обменять на деньги.</div></aside></div>';
   }
 
   function stakeControl(value) {
@@ -333,7 +333,7 @@
   }
 
   function renderProfile() {
-    return '<div class="page-head"><div><div class="eyebrow">ACCOUNT / PLAYER</div><h1>Профиль</h1><p>Статистика и настройки локального игрового профиля.</p></div></div><div class="profile-hero"><div class="profile-avatar">' + esc((state.username || 'H').charAt(0).toUpperCase()) + '</div><div><h2>' + esc(state.username) + '</h2><p>VIRTUAL PLAYER · ' + esc(state.playerId) + '</p></div><div class="profile-id">БАЛАНС<br><strong style="display:block;color:#f1ce91;font-size:16px;margin-top:6px">' + money(state.balance) + ' ₽</strong></div></div><div class="metrics">' + metric('Раундов', money(state.rounds), '◷', 'Завершено') + metric('Побед', money(state.wins), '♛', 'Выигранные раунды') + metric('Поражений', money(state.losses), '↘', 'Проигранные раунды') + metric('Доля побед', state.rounds ? Math.round(state.wins / state.rounds * 100) + '%' : '—', '％', 'Исторический показатель') + '</div><div class="surface support-form"><div class="surface-head"><strong>Данные профиля</strong><span>СОХРАНЯЮТСЯ ЛОКАЛЬНО</span></div><div class="field-label"><span>ИМЯ ИГРОКА</span></div><input class="field-input" id="profileName" maxlength="18" value="' + esc(state.username) + '"><button class="primary-btn full-btn" type="button" data-action="save-profile">СОХРАНИТЬ ПРОФИЛЬ</button><div class="field-help">Изменение имени не влияет на игровые результаты и баланс.</div></div>';
+    return '<div class="page-head"><div><div class="eyebrow">ACCOUNT / PLAYER</div><h1>Профиль</h1><p>Статистика и настройки локального игрового профиля.</p></div></div><div class="profile-hero"><div class="profile-avatar">' + esc((state.username || '1').charAt(0).toUpperCase()) + '</div><div><h2>' + esc(state.username) + '</h2><p>VIRTUAL PLAYER · ' + esc(state.playerId) + '</p></div><div class="profile-id">БАЛАНС<br><strong style="display:block;color:#f1ce91;font-size:16px;margin-top:6px">' + money(state.balance) + ' ₽</strong></div></div><div class="metrics">' + metric('Раундов', money(state.rounds), '◷', 'Завершено') + metric('Побед', money(state.wins), '♛', 'Выигранные раунды') + metric('Поражений', money(state.losses), '↘', 'Проигранные раунды') + metric('Доля побед', state.rounds ? Math.round(state.wins / state.rounds * 100) + '%' : '—', '％', 'Исторический показатель') + '</div><div class="surface support-form"><div class="surface-head"><strong>Данные профиля</strong><span>СОХРАНЯЮТСЯ ЛОКАЛЬНО</span></div><div class="field-label"><span>ИМЯ ИГРОКА</span></div><input class="field-input" id="profileName" maxlength="18" value="' + esc(state.username) + '"><button class="primary-btn full-btn" type="button" data-action="save-profile">СОХРАНИТЬ ПРОФИЛЬ</button><div class="field-help">Изменение имени не влияет на игровые результаты и баланс.</div></div>';
   }
 
   function renderLive() {
