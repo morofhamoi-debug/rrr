@@ -16,6 +16,7 @@
   var currentGame = 'mines';
   var runtime = { mines: null, crash: null, crashTimer: null, plinkoBusy: false, plinkoResult: null, wheelBusy: false, wheelResult: null, caseBusy: false, caseResult: null, coinResult: null, diceResult: null };
   var crashStartedAt = 0;
+  var sessionVersion = 0;
 
   function loadState() {
     try {
@@ -242,7 +243,7 @@
     var aside = '<div class="control-box"><h3>ПАРАМЕТРЫ DICE</h3>' + stakeControl(50) +
       '<div class="field-label"><span>ЦЕЛЕВОЕ ЧИСЛО</span><strong id="diceTargetValue">50</strong></div><input id="diceTarget" type="range" min="5" max="95" value="50" style="width:100%;accent-color:#ef334b">' +
       '<div class="field-label"><span>УСЛОВИЕ ВЫИГРЫША</span></div><select class="field-select" id="diceDirection"><option value="under">Меньше цели</option><option value="over">Больше или равно цели</option></select>' +
-      '<button class="primary-btn full-btn" type="button" data-action="roll-dice">БРОСИТЬ DICE</button><div class="field-help" id="diceOdds">Вероятность и множитель зависят от выбранного диапазона.</div></div>' +
+      '<button class="primary-btn full-btn" type="button" data-action="roll-dice">БРОСИТЬ DICE</button><div class="field-help" id="diceOdds">Вероятность: 50% · теоретический множитель: 1,96×.</div></div>' +
       '<div class="control-box"><h3>ПРАВИЛА</h3><div class="field-help">Генерируется число от 0 до 99. При выполнении условия начисляется виртуальный результат с коэффициентом 0,98 / вероятность.</div></div>';
     return commonHead('Dice', 'Выбери цель и сравни её со случайным броском.', GAME_ICONS.dice) + content + commonAside(aside);
   }
@@ -255,7 +256,9 @@
       for (var col = 0; col <= row; col++) pegs += '<i class="peg"></i>';
       rows += '<div class="peg-row">' + pegs + '</div>';
     }
-    var slots = ['1.7×','1.3×','1.0×','0.8×','0.7×','0.8×','1.0×','1.3×','1.7×'];
+    var slotTables = { low: [1.7, 1.3, 1, 0.8, 0.7, 0.8, 1, 1.3, 1.7], medium: [6, 2.2, 1.3, 0.65, 0.35, 0.65, 1.3, 2.2, 6], high: [15, 4, 1.5, 0.3, 0.1, 0.3, 1.5, 4, 15] };
+    var activeRisk = runtime.plinkoRisk || 'low';
+    var slots = slotTables[activeRisk].map(function (v) { return v.toFixed(2).replace(/0+$/, '').replace(/\\.$/, '') + '×'; });
     var stage = '<div class="game-stage"><span class="stage-caption">PLINKO BOARD · 8 ROWS</span><div class="plinko-board"><span class="plinko-ball" id="plinkoBall"></span>' + rows + '<div class="plinko-slots">' + slots.map(function (x) { return '<span>' + x + '</span>'; }).join('') + '</div></div><div class="game-message" id="plinkoResult">' + (result ? esc(result.message) : 'Запусти шар и смотри, в какой слот он попадёт.') + '</div><span class="stage-foot">УПРОЩЁННАЯ ДЕМО-ФИЗИКА · СЛУЧАЙНЫЙ ПУТЬ</span></div>';
     var aside = '<div class="control-box"><h3>ПАРАМЕТРЫ PLINKO</h3>' + stakeControl(50) +
       '<div class="field-label"><span>УРОВЕНЬ РИСКА</span></div><select class="field-select" id="plinkoRisk"><option value="low">Low · спокойный</option><option value="medium">Medium · средний</option><option value="high">High · высокий</option></select>' +
@@ -503,16 +506,19 @@
       medium: [6, 2.2, 1.3, 0.65, 0.35, 0.65, 1.3, 2.2, 6],
       high: [15, 4, 1.5, 0.3, 0.1, 0.3, 1.5, 4, 15]
     };
+    runtime.plinkoRisk = risk;
     var slot = 0;
     for (var i = 0; i < 8; i++) if (rand() >= 0.5) slot++;
     var mult = tables[risk][slot];
     var payout = round2(stake * mult);
     runtime.plinkoBusy = true;
+    var session = sessionVersion;
     runtime.plinkoResult = { message: 'Шар попал в слот ' + (slot + 1) + ' · ' + mult.toFixed(2) + '× · ' + money(payout) + ' CR.', slot: slot, mult: mult };
     render();
     var ball = document.getElementById('plinkoBall');
-    if (ball) { ball.style.display = 'block'; ball.classList.add('drop'); }
+    if (ball) { ball.style.display = 'block'; ball.style.setProperty('--ball-end', (slot / 8 * 100) + '%'); ball.classList.add('drop'); }
     setTimeout(function () {
+      if (session !== sessionVersion) return;
       runtime.plinkoBusy = false;
       settleRound('plinko', stake, payout, payout > 0 ? 'РЕЗУЛЬТАТ' : 'ПРОИГРЫШ', slot + 1 + ' слот · ' + mult.toFixed(2) + '×');
       if (page === 'game' && currentGame === 'plinko') render();
@@ -529,6 +535,7 @@
     var mult = values[index];
     var payout = round2(stake * mult);
     runtime.wheelBusy = true;
+    var session = sessionVersion;
     var totalAngle = 360 * 6 + (360 - (index * 36 + 18));
     runtime.wheelResult = { angle: 0, message: 'Колесо вращается...', index: index, mult: mult };
     render();
@@ -537,6 +544,7 @@
       if (wheel) wheel.style.transform = 'rotate(' + totalAngle + 'deg)';
     });
     setTimeout(function () {
+      if (session !== sessionVersion) return;
       if (runtime.wheelResult) runtime.wheelResult.angle = totalAngle;
       runtime.wheelBusy = false;
       runtime.wheelResult.message = 'Сектор ' + (index + 1) + ' · ' + mult.toFixed(2) + '× · ' + money(payout) + ' CR.';
@@ -561,9 +569,11 @@
     for (var i = 0; i < drops.length; i++) { sum += drops[i].w; if (pick < sum) { mult = drops[i].m; break; } }
     var payout = round2(cost * mult);
     runtime.caseBusy = true;
+    var session = sessionVersion;
     runtime.caseResult = { message: 'Кейс открывается...', mult: mult };
     render();
     setTimeout(function () {
+      if (session !== sessionVersion) return;
       runtime.caseBusy = false;
       runtime.caseResult.message = 'Выпало ' + mult.toFixed(2) + '× · ' + money(payout) + ' CR.';
       settleRound('cases', cost, payout, payout > 0 ? 'ОТКРЫТ' : 'ПУСТО', mult.toFixed(2) + '×');
@@ -652,6 +662,7 @@
     else if (action === 'reset-demo') {
       if (window.confirm('Сбросить профиль, баланс и всю локальную историю?')) {
         if (runtime.crashTimer) clearInterval(runtime.crashTimer);
+        sessionVersion += 1;
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
         state = Object.assign({}, defaultState, { playerId: 'HG-' + String(Math.floor(Math.random() * 900000 + 100000)) });
         runtime = { mines: null, crash: null, crashTimer: null, plinkoBusy: false, plinkoResult: null, wheelBusy: false, wheelResult: null, caseBusy: false, caseResult: null, coinResult: null, diceResult: null };
