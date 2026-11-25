@@ -23,11 +23,11 @@ export class WorldManager {
 
   init(settings) {
     this.scene.background = null;
-    this.scene.fog = new THREE.FogExp2(0x91a59d, 0.00028);
+    this.scene.fog = new THREE.FogExp2(0x91a59d, 0.00022);
     this.roads.init();
     this.applySettings(settings);
     this.terrain.update({ x: 22, z: 78 });
-    this.grass.update({ x: 22, z: 78 }, 0);
+    this.grass.update({ x: 22, z: 78 }, 0, this.weather);
   }
 
   heightAt(x, z) { return this.terrain.heightAt(x, z); }
@@ -43,8 +43,8 @@ export class WorldManager {
     this.weather.update(dt);
     this.windSpeed = this.weather.windSpeed;
     this.terrain.update(camera.position);
-    this.grass.update(camera.position, dt);
-    this.clouds.update(dt);
+    this.grass.update(camera.position, dt, this.weather);
+    this.clouds.update(dt, this.weather.windSpeed);
     this.sky.update(camera, this.weather.time);
     this.lighting.update(this.weather.time, camera.position);
   }

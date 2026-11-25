@@ -2,17 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#101713" />
-  <meta name="description" content="LEONIDA — интерактивная 3D-среда открытого мира." />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#11160f" />
+  <meta name="description" content="LEONIDA — интерактивный открытый мир." />
   <link rel="stylesheet" href="./style.css" />
   <title>LEONIDA — Open World</title>
   <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
-      }
-    }
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}
   </script>
 </head>
 <body>
@@ -21,12 +17,7 @@
     <div id="vignette"></div>
     <main id="menu-screen" class="screen-layer"><div id="menu-content"></div></main>
     <div id="loading-screen" class="loading-layer is-hidden">
-      <div class="loading-card">
-        <div class="eyebrow">LEONIDA ENVIRONMENT SYSTEM</div>
-        <div class="loading-title">Подготовка территории</div>
-        <div class="loading-track"><span id="loading-bar"></span></div>
-        <div id="loading-label" class="loading-label">Загрузка ландшафта…</div>
-      </div>
+      <div class="loading-card"><div class="eyebrow">LEONIDA ENVIRONMENT SYSTEM</div><div class="loading-title">Подготовка территории</div><div class="loading-track"><span id="loading-bar"></span></div><div id="loading-label" class="loading-label">Загрузка ландшафта…</div></div>
     </div>
     <section id="hud" class="hud is-hidden" aria-live="polite">
       <div class="hud-brand"><span class="hud-dot"></span><span>LEONIDA</span><small>FIELD RESEARCH AREA</small></div>
@@ -34,6 +25,18 @@
       <div class="hud-bottom-left"><span class="keycap">W A S D</span> движение <span class="keycap">МЫШЬ</span> обзор <span class="keycap">E / Q</span> высота</div>
       <button id="hud-menu" class="hud-menu-button" type="button">ESC <span>МЕНЮ</span></button>
       <div id="pointer-hint" class="pointer-hint">Нажмите на мир, чтобы захватить мышь</div>
+      <div id="touch-controls" class="touch-controls" aria-label="Сенсорное управление">
+        <div class="move-stick-wrap">
+          <div id="move-stick" class="move-stick"><div class="stick-ring"></div><div class="stick-knob"></div></div>
+          <span class="touch-label">ДВИЖЕНИЕ</span>
+        </div>
+        <div id="look-zone" class="look-zone"><span>СВАЙП — ОБЗОР · 2 ПАЛЬЦА — ЗУМ</span></div>
+        <div class="touch-actions">
+          <button id="touch-up" class="touch-action" type="button" aria-label="Подняться"><span>＋</span><small>ВЫШЕ</small></button>
+          <button id="touch-down" class="touch-action" type="button" aria-label="Опуститься"><span>－</span><small>НИЖЕ</small></button>
+          <button id="touch-sprint" class="touch-action touch-boost" type="button" aria-label="Ускорение"><span>»</span><small>УСКОРЕНИЕ</small></button>
+        </div>
+      </div>
     </section>
     <div id="toast" class="toast" role="status"></div>
   </div>
