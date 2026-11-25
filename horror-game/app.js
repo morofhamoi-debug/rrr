@@ -9,12 +9,12 @@
   var defaultState = {
     balance: 10000, rounds: 0, wins: 0, losses: 0, history: [], operations: [],
     username: 'Игрок', playerId: '1W-' + String(Math.floor(Math.random() * 900000 + 100000)),
-    lastBonus: '', claimedMissions: [], sound: false, reducedMotion: false, theme: 'dark', support: []
+    lastBonus: '', claimedMissions: [], sound: false, reducedMotion: false, support: []
   };
   var state = loadState();
   var page = 'home';
   var currentGame = 'mines';
-  var runtime = { mines: null, crash: null, crashTimer: null, plinkoBusy: false, plinkoResult: null, wheelBusy: false, wheelResult: null, caseBusy: false, caseResult: null, coinResult: null, diceResult: null };
+  var runtime = { mines: null, crash: null, crashTimer: null, plinkoBusy: false, plinkoResult: null, wheelBusy: false, wheelResult: null, caseBusy: false, caseResult: null, coinResult: null, diceResult: null, diceBusy: false, diceInterval: null, diceTimeout: null, coinBusy: false, coinTimeout: null };
   var crashStartedAt = 0;
   var sessionVersion = 0;
 
@@ -31,7 +31,6 @@
           operations: Array.isArray(saved.operations) ? saved.operations.slice(0, 60) : [],
           claimedMissions: Array.isArray(saved.claimedMissions) ? saved.claimedMissions : [],
           support: Array.isArray(saved.support) ? saved.support : [],
-          theme: saved.theme === 'light' ? 'light' : 'dark'
         });
       }
     } catch (e) {}
@@ -255,66 +254,80 @@
   }
 
   function renderDice() {
-    var r = runtime.diceResult;
-    var target = 50;
-    var result = r ? '<div class="game-message ' + (r.win ? 'good' : 'bad') + '">' + esc(r.message) + '</div>' : '<div class="game-message">Настрой диапазон и проверь прогноз.</div>';
-    var content = '<div class="game-stage"><span class="stage-caption">DICE ROLL · 0—99</span><div class="dice-result">' + (r ? String(r.roll).padStart(2, '0') : '— —') + '</div><div class="result-track"><span class="result-zone" style="width:' + (r ? r.target : 50) + '%"></span><span class="result-marker" style="left:' + (r ? r.roll : 50) + '%"></span></div><span class="stage-foot">СЛУЧАЙНОЕ ЧИСЛО ОТ 0 ДО 99</span>' + result + '</div>';
+    var r = runtime.diceResult, busy = runtime.diceBusy;
+    var target = r && r.target ? r.target : 50;
+    var direction = r && r.direction ? r.direction : 'under';
+    var probability = direction === 'under' ? target : 100 - target;
+    var zoneLeft = direction === 'under' ? 0 : target;
+    var rollText = busy ? '··' : (r && r.roll != null ? String(r.roll).padStart(2, '0') : '— —');
+    var resultText = busy ? 'Кубик катится…' : (r ? r.message : 'Настрой диапазон и запусти бросок.');
+    var resultClass = busy ? '' : (r ? (r.win ? 'good' : 'bad') : '');
+    var marker = !busy && r && r.roll != null ? r.roll : 50;
+    var content = '<div class="game-stage dice-stage"><span class="stage-caption">DICE ENGINE · 00—99</span><div class="dice-visual"><div class="dice-glow"></div><div class="dice-cube' + (busy ? ' is-rolling' : '') + '" id="diceValue">' + rollText + '</div></div><div class="dice-range-head"><span>0</span><strong>' + (busy ? 'ROLLING' : 'RESULT') + '</strong><span>99</span></div><div class="result-track"><span class="result-zone" style="left:' + zoneLeft + '%;width:' + probability + '%"></span><span class="result-marker" style="left:' + marker + '%"></span></div><div class="dice-outcome"><span>ТВОЯ ЦЕЛЬ <strong>' + target + '</strong></span><span>ШАНС <strong>' + probability + '%</strong></span><span>КОЭФФИЦИЕНТ <strong>' + (0.97 / (probability / 100)).toFixed(2) + '×</strong></span></div><div class="game-message ' + resultClass + '" id="diceMessage">' + esc(resultText) + '</div><span class="stage-foot">СЛУЧАЙНОЕ ЧИСЛО · ВИРТУАЛЬНЫЙ РАУНД</span></div>';
     var aside = '<div class="control-box"><h3>ПАРАМЕТРЫ DICE</h3>' + stakeControl(50) +
-      '<div class="field-label"><span>ЦЕЛЕВОЕ ЧИСЛО</span><strong id="diceTargetValue">50</strong></div><input id="diceTarget" type="range" min="5" max="95" value="50" style="width:100%;accent-color:#367cff">' +
-      '<div class="field-label"><span>УСЛОВИЕ ВЫИГРЫША</span></div><select class="field-select" id="diceDirection"><option value="under">Меньше цели</option><option value="over">Больше или равно цели</option></select>' +
-      '<button class="primary-btn full-btn" type="button" data-action="roll-dice">БРОСИТЬ DICE</button><div class="field-help" id="diceOdds">Вероятность: 50% · теоретический множитель: 1,96×.</div></div>' +
-      '<div class="control-box"><h3>ПРАВИЛА</h3><div class="field-help">Генерируется число от 0 до 99. При выполнении условия начисляется виртуальный результат с коэффициентом 0,98 / вероятность.</div></div>';
-    return commonHead('Dice', 'Выбери цель и сравни её со случайным броском.', GAME_ICONS.dice) + content + commonAside(aside);
+      '<div class="field-label"><span>ЦЕЛЕВОЕ ЧИСЛО</span><strong id="diceTargetValue">' + target + '</strong></div><input id="diceTarget" type="range" min="5" max="95" value="' + target + '" style="width:100%;accent-color:#367cff"' + (busy ? ' disabled' : '') + '>' +
+      '<div class="field-label"><span>УСЛОВИЕ ВЫИГРЫША</span></div><select class="field-select" id="diceDirection"' + (busy ? ' disabled' : '') + '><option value="under"' + (direction === 'under' ? ' selected' : '') + '>Меньше цели</option><option value="over"' + (direction === 'over' ? ' selected' : '') + '>Больше или равно цели</option></select>' +
+      '<button class="primary-btn full-btn" type="button" data-action="roll-dice"' + (busy ? ' disabled' : '') + '>' + (busy ? 'ИДЁТ БРОСОК…' : 'БРОСИТЬ КУБИК') + '</button><div class="field-help" id="diceOdds">Вероятность: ' + probability + '% · виртуальный коэффициент: ' + (0.97 / (probability / 100)).toFixed(2) + '×.</div></div>' +
+      '<div class="control-box"><h3>КАК РАБОТАЕТ DICE</h3><div class="field-help">Число несколько секунд прокручивается, затем фиксируется итог от 00 до 99. Зона выигрыша зависит от выбранного условия.</div></div>';
+    return commonHead('Dice', 'Выбери диапазон, наблюдай за броском и дождись результата.', GAME_ICONS.dice) + content + '<div class="spacer"></div>' + commonAside(aside);
+  }
+
+    function plinkoMultipliers(risk) {
+    var tables = {
+      low: [5.98, 2.99, 1.87, 1.34, 1.05, 0.86, 0.71, 0.86, 1.05, 1.34, 1.87, 2.99, 5.98],
+      medium: [24.83, 9.93, 4.14, 2.07, 1.16, 0.54, 0.25, 0.54, 1.16, 2.07, 4.14, 9.93, 24.83],
+      high: [98.44, 28.71, 8.20, 2.46, 0.66, 0.15, 0.04, 0.15, 0.66, 2.46, 8.20, 28.71, 98.44]
+    };
+    return tables[risk] || tables.low;
   }
 
   function renderPlinko() {
-    var result = runtime.plinkoResult;
-    var rows = '';
-    for (var row = 0; row < 8; row++) {
+    var result = runtime.plinkoResult, rows = '';
+    for (var row = 0; row < 12; row++) {
       var pegs = '';
       for (var col = 0; col <= row; col++) pegs += '<i class="peg"></i>';
       rows += '<div class="peg-row">' + pegs + '</div>';
     }
-    var slotTables = { low: [1.7, 1.3, 1, 0.8, 0.7, 0.8, 1, 1.3, 1.7], medium: [6, 2.2, 1.3, 0.65, 0.35, 0.65, 1.3, 2.2, 6], high: [15, 4, 1.5, 0.3, 0.1, 0.3, 1.5, 4, 15] };
     var activeRisk = runtime.plinkoRisk || 'low';
-    var slots = slotTables[activeRisk].map(function (v) { return String(Number(v.toFixed(2))) + '×'; });
-    var stage = '<div class="game-stage"><span class="stage-caption">PLINKO BOARD · 8 ROWS</span><div class="plinko-board"><span class="plinko-ball" id="plinkoBall"></span>' + rows + '<div class="plinko-slots">' + slots.map(function (x) { return '<span>' + x + '</span>'; }).join('') + '</div></div><div class="game-message" id="plinkoResult">' + (result ? esc(result.message) : 'Запусти шар и смотри, в какой слот он попадёт.') + '</div><span class="stage-foot">ВИЗУАЛЬНАЯ СИМУЛЯЦИЯ · СЛУЧАЙНЫЙ ПУТЬ</span></div>';
+    var slotValues = plinkoMultipliers(activeRisk);
+    var slots = slotValues.map(function (v, i) {
+      return '<span data-slot="' + i + '"' + (result && !runtime.plinkoBusy && result.slot === i ? ' class="is-hit"' : '') + '>' + v.toFixed(2).replace('.', ',') + '×</span>';
+    });
+    var stage = '<div class="game-stage plinko-stage"><span class="stage-caption">PLINKO ENGINE · 12 ROWS</span><div class="plinko-board"><span class="plinko-ball" id="plinkoBall"></span>' + rows + '<div class="plinko-slots">' + slots.join('') + '</div></div><div class="game-message" id="plinkoResult">' + (runtime.plinkoBusy ? 'Шар проходит ряд за рядом…' : (result ? esc(result.message) : 'Шар проходит через 12 рядов и попадает в один из 13 слотов.')) + '</div><span class="stage-foot">12 СТОЛКНОВЕНИЙ · 13 ВИРТУАЛЬНЫХ СЛОТОВ</span></div>';
     var aside = '<div class="control-box"><h3>ПАРАМЕТРЫ PLINKO</h3>' + stakeControl(50) +
-      '<div class="field-label"><span>УРОВЕНЬ РИСКА</span></div><select class="field-select" id="plinkoRisk"><option value="low"' + (activeRisk === 'low' ? ' selected' : '') + '>Low · спокойный</option><option value="medium"' + (activeRisk === 'medium' ? ' selected' : '') + '>Medium · средний</option><option value="high"' + (activeRisk === 'high' ? ' selected' : '') + '>High · высокий</option></select>' +
-      '<button class="primary-btn full-btn" type="button" data-action="drop-plinko"' + (runtime.plinkoBusy ? ' disabled' : '') + '>БРОСИТЬ ШАР</button><div class="field-help">Результат выбирается генератором случайных чисел; движение шара — визуальная анимация, не физический расчёт.</div></div>';
-    return commonHead('Plinko', 'Направь шар по доске с виртуальными множителями.', GAME_ICONS.plinko) + stage + '<div class="spacer"></div>' + commonAside(aside);
+      '<div class="field-label"><span>УРОВЕНЬ РИСКА</span></div><select class="field-select" id="plinkoRisk"' + (runtime.plinkoBusy ? ' disabled' : '') + '><option value="low"' + (activeRisk === 'low' ? ' selected' : '') + '>Low · низкий</option><option value="medium"' + (activeRisk === 'medium' ? ' selected' : '') + '>Medium · средний</option><option value="high"' + (activeRisk === 'high' ? ' selected' : '') + '>High · высокий</option></select>' +
+      '<button class="primary-btn full-btn" type="button" data-action="drop-plinko"' + (runtime.plinkoBusy ? ' disabled' : '') + '>' + (runtime.plinkoBusy ? 'ШАР В ПУТИ…' : 'БРОСИТЬ ШАР') + '</button><div class="field-help">Каждый ряд добавляет случайный шаг влево или вправо. Итоговый слот определяется тем же маршрутом, который виден в анимации.</div><div class="plinko-last-result">' + (result && !runtime.plinkoBusy ? 'Последний слот: <strong>' + (result.slot + 1) + '</strong> · множитель <strong>' + result.mult.toFixed(2) + '×</strong>' : 'Чем дальше слот от центра, тем реже он выпадает.') + '</div></div>';
+    return commonHead('Plinko', 'Наблюдай за траекторией шара и результатом каждого столкновения.', GAME_ICONS.plinko) + stage + '<div class="spacer"></div>' + commonAside(aside);
   }
 
-  function renderWheel() {
+    function renderWheel() {
     var labels = ['0×','0×','0.2×','0.3×','0.5×','0.7×','0.8×','1×','1.5×','3×'];
-    var labelHTML = labels.map(function (v, i) {
-      var a = i * 36 + 18;
-      return '<span style="transform:rotate(' + a + 'deg) translateY(-104px) rotate(-' + a + 'deg)">' + v + '</span>';
-    }).join('');
-    var result = runtime.wheelResult;
-    var angle = result ? result.angle : 0;
-    var stage = '<div class="game-stage wheel-stage"><span class="stage-caption">LUCKY WHEEL · 10 СЕКТОРОВ</span><div class="wheel-wrap"><span class="wheel-pointer"></span><div class="wheel-disc" id="wheelDisc" style="transform:rotate(' + angle + 'deg)"><div class="wheel-labels">' + labelHTML + '</div></div></div><div class="game-message" id="wheelResult">' + (result ? esc(result.message) : 'Колесо остановится на одном из секторов.') + '</div><span class="stage-foot">ОДИН СЕКТОР · ВИРТУАЛЬНЫЙ РЕЗУЛЬТАТ</span></div>';
-    var aside = '<div class="control-box"><h3>WHEEL</h3>' + stakeControl(50) +
-      '<button class="primary-btn full-btn" type="button" data-action="spin-wheel"' + (runtime.wheelBusy ? ' disabled' : '') + '>КРУТИТЬ КОЛЕСО</button><div class="field-help">Колесо делает несколько оборотов и плавно останавливается на выбранном секторе. Результат виртуальный.</div></div>';
-    return commonHead('Wheel', 'Крути колесо и получай виртуальный результат.', GAME_ICONS.wheel) + stage + '<div class="spacer"></div>' + commonAside(aside);
-  }function renderCases() {
-    var result = runtime.caseResult;
+    var labelHTML = labels.map(function (v, i) { var a = i * 36 + 18; return '<span style="transform:rotate(' + a + 'deg) translateY(-104px) rotate(-' + a + 'deg)">' + v + '</span>'; }).join('');
+    var result = runtime.wheelResult, angle = result ? result.angle : 0;
+    var stage = '<div class="game-stage wheel-stage"><span class="stage-caption">LUCKY WHEEL · 10 СЕКТОРОВ</span><div class="wheel-wrap"><span class="wheel-pointer"></span><div class="wheel-disc" id="wheelDisc" style="transform:rotate(' + angle + 'deg)"><div class="wheel-labels">' + labelHTML + '</div></div></div><div class="game-message" id="wheelResult">' + (runtime.wheelBusy ? 'Колесо набирает скорость…' : (result ? esc(result.message) : 'Колесо делает десять полных оборотов и плавно останавливается.')) + '</div><span class="stage-foot">ПЛАВНОЕ ВРАЩЕНИЕ · ВИРТУАЛЬНЫЙ РЕЗУЛЬТАТ</span></div>';
+    var aside = '<div class="control-box"><h3>WHEEL</h3>' + stakeControl(50) + '<button class="primary-btn full-btn" type="button" data-action="spin-wheel"' + (runtime.wheelBusy ? ' disabled' : '') + '>' + (runtime.wheelBusy ? 'КОЛЕСО ВРАЩАЕТСЯ…' : 'КРУТИТЬ КОЛЕСО') + '</button><div class="field-help">Колесо делает десять оборотов, постепенно замедляется и фиксируется точно на выбранном секторе.</div></div>';
+    return commonHead('Wheel', 'Десять оборотов, длинное замедление и точная остановка на секторе.', GAME_ICONS.wheel) + stage + '<div class="spacer"></div>' + commonAside(aside);
+  }
+
+  function renderCases() {
+    var result = runtime.caseResult, busy = runtime.caseBusy;
     var cases = [{ id: 'starter', name: 'Starter', cost: 100, icon: '▣', desc: 'Лёгкий кейс' }, { id: 'night', name: 'Night', cost: 250, icon: '◈', desc: 'Ночной набор' }, { id: 'legend', name: 'Legend', cost: 500, icon: '♛', desc: 'Редкий набор' }];
-    var content = '<div class="game-stage"><span class="stage-caption">CASE OPENING · VIRTUAL ITEMS</span><div class="case-grid">' + cases.map(function (c) {
-      return '<div class="case-card"><div class="case-box">' + c.icon + '</div><strong>' + c.name + '</strong><small>' + c.desc + ' · ' + c.cost + ' ₽</small><button type="button" data-action="open-case" data-case="' + c.id + '"' + (runtime.caseBusy ? ' disabled' : '') + '>ОТКРЫТЬ</button></div>';
-    }).join('') + '</div><div class="game-message" id="caseResult">' + (result ? esc(result.message) : 'Выбери кейс. Содержимое определяется случайно.') + '</div><span class="stage-foot">НАГРАДЫ НЕ ИМЕЮТ ДЕНЕЖНОЙ СТОИМОСТИ</span></div>';
+    var content = '<div class="game-stage cases-stage"><span class="stage-caption">CASE OPENING · VIRTUAL ITEMS</span><div class="case-opening-visual' + (busy ? ' is-opening' : (result ? ' is-open' : '')) + '"><span>' + (busy ? '✧' : (result ? '✦' : '▣')) + '</span></div><div class="case-status">' + (busy ? 'ОТКРЫВАЕМ КЕЙС…' : (result ? 'РЕЗУЛЬТАТ ЗАФИКСИРОВАН' : 'ВЫБЕРИ КЕЙС')) + '</div><div class="case-grid">' + cases.map(function (c) {
+      return '<div class="case-card"><div class="case-box">' + c.icon + '</div><strong>' + c.name + '</strong><small>' + c.desc + ' · ' + c.cost + ' ₽</small><button type="button" data-action="open-case" data-case="' + c.id + '"' + (busy ? ' disabled' : '') + '>ОТКРЫТЬ</button></div>';
+    }).join('') + '</div><div class="game-message" id="caseResult">' + (result ? esc(result.message) : 'Анимация открытия длится несколько секунд.') + '</div><span class="stage-foot">НАГРАДЫ НЕ ИМЕЮТ ДЕНЕЖНОЙ СТОИМОСТИ</span></div>';
     var aside = '<div class="control-box"><h3>КЕЙСЫ</h3><div class="field-help">Каждое открытие использует виртуальные ₽. Возможные коэффициенты: 0×, 0,3×, 0,5×, 0,8×, 1×, 1,5×, 2×, 3× и 5× с разной частотой.</div></div>';
-    return commonHead('Cases', 'Открывай виртуальные кейсы с разными наградами.', GAME_ICONS.cases) + content + commonAside(aside);
+    return commonHead('Cases', 'Открывай виртуальные кейсы с анимацией и плавным раскрытием результата.', GAME_ICONS.cases) + content + '<div class="spacer"></div>' + commonAside(aside);
   }
 
-  function renderCoinflip() {
-    var r = runtime.coinResult;
-    var content = '<div class="game-stage"><span class="stage-caption">COINFLIP · 50 / 50</span><div class="flip-choices"><button type="button" class="flip-choice" data-action="flip-coin" data-face="heads">✦<small>ОРЁЛ</small></button><button type="button" class="flip-choice" data-action="flip-coin" data-face="tails">◉<small>РЕШКА</small></button></div><div class="multiplier" id="coinResult" style="font-size:30px">' + (r ? (r.face === 'heads' ? 'ОРЁЛ' : 'РЕШКА') : 'ВЫБЕРИ СТОРОНУ') + '</div><div class="game-message ' + (r ? (r.win ? 'good' : 'bad') : '') + '">' + (r ? esc(r.message) : 'Равные шансы. Выплата при совпадении — 1,96×.') + '</div><span class="stage-foot">50% / 50% · ВИРТУАЛЬНАЯ ИГРА</span></div>';
-    var aside = '<div class="control-box"><h3>СТАВКА COINFLIP</h3>' + stakeControl(50) + '<div class="field-help">Нажми на сторону монеты. Результат выбирается случайно.</div><div class="field-help">Выплата при победе: 1,96× от ставки. При проигрыше ставка раунда теряется.</div></div>';
-    return commonHead('Coinflip', 'Орёл или решка — простой виртуальный бросок.', GAME_ICONS.coinflip) + content + commonAside(aside);
+    function renderCoinflip() {
+    var r = runtime.coinResult, busy = runtime.coinBusy;
+    var side = r ? (r.face === 'heads' ? 'ОРЁЛ' : 'РЕШКА') : 'ВЫБЕРИ СТОРОНУ';
+    var content = '<div class="game-stage coin-stage"><span class="stage-caption">COINFLIP · 50 / 50</span><div class="coin-scene"><div class="coin-aura"></div><div class="coin-disc" id="coinDisc"><div class="coin-face coin-front"><strong>О</strong><small>ОРЁЛ</small></div><div class="coin-face coin-back"><strong>Р</strong><small>РЕШКА</small></div></div><div class="coin-shadow"></div></div><div class="coin-result-title">' + (busy ? 'МОНЕТА В ПОЛЁТЕ…' : side) + '</div><div class="game-message ' + (busy ? '' : (r ? (r.win ? 'good' : 'bad') : '')) + '">' + (busy ? 'Подбрасываем монету и ждём её приземления.' : (r ? esc(r.message) : 'Выбери сторону. Монета совершит несколько оборотов перед остановкой.')) + '</div><span class="stage-foot">ОДИН БРОСОК · ДВА РАВНОВЕРОЯТНЫХ ИСХОДА</span></div>';
+    var aside = '<div class="control-box"><h3>СТАВКА COINFLIP</h3>' + stakeControl(50) + '<div class="flip-choices"><button type="button" class="flip-choice" data-action="flip-coin" data-face="heads"' + (busy ? ' disabled' : '') + '>✦<small>ОРЁЛ</small></button><button type="button" class="flip-choice" data-action="flip-coin" data-face="tails"' + (busy ? ' disabled' : '') + '>◉<small>РЕШКА</small></button></div><div class="field-help">После выбора монета вращается около трёх секунд. Выплата при совпадении — 1,94× виртуальной ставки.</div></div>';
+    return commonHead('Coinflip', 'Выбери сторону и дождись завершения вращения монеты.', GAME_ICONS.coinflip) + content + '<div class="spacer"></div>' + commonAside(aside);
   }
 
-  function renderGame() {
+    function renderGame() {
     if (currentGame === 'mines') return renderMines();
     if (currentGame === 'crash') return renderCrash();
     if (currentGame === 'dice') return renderDice();
@@ -375,8 +388,10 @@
   }
 
   function renderSettings() {
-    return '<div class="page-head"><div><div class="eyebrow">PREFERENCES / SETTINGS</div><h1>Настройки</h1><p>Настрой внешний вид и параметры интерфейса.</p></div></div><div class="surface"><div class="list-card"><span class="list-icon">◐</span><span><strong>Оформление</strong><small>Переключение между светлой и тёмной темой.</small></span><button class="' + (state.theme === 'light' ? 'soft-btn' : 'secondary-btn') + '" type="button" data-action="toggle-theme">' + (state.theme === 'light' ? 'СВЕТЛАЯ' : 'ТЁМНАЯ') + '</button></div><div class="list-card"><span class="list-icon">♫</span><span><strong>Звуковые сигналы</strong><small>Короткие звуки при завершении раунда.</small></span><button class="' + (state.sound ? 'soft-btn' : 'secondary-btn') + '" type="button" data-action="toggle-sound">' + (state.sound ? 'ВКЛЮЧЕНО' : 'ВЫКЛЮЧЕНО') + '</button></div><div class="list-card"><span class="list-icon">◌</span><span><strong>Уменьшить анимацию</strong><small>Отключить плавные переходы и эффекты.</small></span><button class="' + (state.reducedMotion ? 'soft-btn' : 'secondary-btn') + '" type="button" data-action="toggle-motion">' + (state.reducedMotion ? 'ВКЛЮЧЕНО' : 'ВЫКЛЮЧЕНО') + '</button></div><div class="spacer"></div><div class="notice">Это неофициальный макет. Баланс в виртуальных ₽ нельзя пополнить, вывести или обменять на реальные деньги. Очистка удалит локальную статистику и профиль.</div><button class="secondary-btn" type="button" data-action="reset-demo">ОЧИСТИТЬ ПРОФИЛЬ</button></div>';
-  }function renderSupport() {
+    return '<div class="page-head"><div><div class="eyebrow">PREFERENCES / SETTINGS</div><h1>Настройки</h1><p>Настрой игровые эффекты и локальные данные.</p></div></div><div class="surface"><div class="list-card"><span class="list-icon">♫</span><span><strong>Звуковые сигналы</strong><small>Короткие звуки при завершении раунда.</small></span><button class="' + (state.sound ? 'soft-btn' : 'secondary-btn') + '" type="button" data-action="toggle-sound">' + (state.sound ? 'ВКЛЮЧЕНО' : 'ВЫКЛЮЧЕНО') + '</button></div><div class="list-card"><span class="list-icon">◌</span><span><strong>Уменьшить декоративную анимацию</strong><small>Сократить только декоративные эффекты интерфейса.</small></span><button class="' + (state.reducedMotion ? 'soft-btn' : 'secondary-btn') + '" type="button" data-action="toggle-motion">' + (state.reducedMotion ? 'ВКЛЮЧЕНО' : 'ВЫКЛЮЧЕНО') + '</button></div><div class="spacer"></div><div class="notice">Фон сайта — белый. Баланс в виртуальных ₽ нельзя пополнить, вывести или обменять на реальные деньги. Очистка удалит локальную статистику и профиль.</div><button class="secondary-btn" type="button" data-action="reset-demo">ОЧИСТИТЬ ПРОФИЛЬ</button></div>';
+  }
+
+  function renderSupport() {
     return '<div class="page-head"><div><div class="eyebrow">HELP / SUPPORT</div><h1>Поддержка</h1><p>Форма создаёт локальное обращение в этом браузере — сообщение никуда не отправляется.</p></div></div><div class="surface support-form"><div class="surface-head"><strong>Новое обращение</strong><span>LOCAL FORM</span></div><div class="field-label"><span>ТЕМА</span></div><select class="field-select" id="supportTopic"><option>Ошибка в игре</option><option>Вопрос по профилю</option><option>Предложение</option><option>Другое</option></select><div class="field-label"><span>СООБЩЕНИЕ</span></div><textarea class="field-textarea" id="supportMessage" maxlength="1000" placeholder="Опиши вопрос или проблему..."></textarea><button class="primary-btn full-btn" type="button" data-action="send-support">СОХРАНИТЬ ОБРАЩЕНИЕ</button><div class="field-help">Обращение сохранится локально и будет видно только на этом устройстве.</div></div><div class="spacer"></div><div class="surface"><div class="surface-head"><strong>Локальные обращения</strong><span>' + state.support.length + '</span></div>' + (state.support.length ? state.support.map(function (s) { return '<div class="activity-row"><span class="activity-icon">◌</span><span><strong>' + esc(s.topic) + '</strong><small>' + esc(s.message) + ' · ' + timeLabel(s.date) + '</small></span><span class="pill">СОХРАНЕНО</span></div>'; }).join('') : '<div class="empty-hint">Пока нет обращений.</div>') + '</div>';
   }
 
@@ -396,9 +411,9 @@
     updateHeader();
     updateNav();
     document.body.classList.toggle('reduce-motion', !!state.reducedMotion);
-    document.body.setAttribute('data-theme', state.theme === 'light' ? 'light' : 'dark');
+    document.body.setAttribute('data-theme', 'light');
     var themeMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeMeta) themeMeta.setAttribute('content', state.theme === 'light' ? '#f2f5fa' : '#090e18');
+    if (themeMeta) themeMeta.setAttribute('content', '#ffffff');
   }
 
   function readStake() {
@@ -690,7 +705,7 @@
         sessionVersion += 1;
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
         state = Object.assign({}, defaultState, { playerId: '1W-' + String(Math.floor(Math.random() * 900000 + 100000)) });
-        runtime = { mines: null, crash: null, crashTimer: null, plinkoBusy: false, plinkoResult: null, wheelBusy: false, wheelResult: null, caseBusy: false, caseResult: null, coinResult: null, diceResult: null };
+        runtime = { mines: null, crash: null, crashTimer: null, plinkoBusy: false, plinkoResult: null, wheelBusy: false, wheelResult: null, caseBusy: false, caseResult: null, coinResult: null, diceResult: null, diceBusy: false, diceInterval: null, diceTimeout: null, coinBusy: false, coinTimeout: null };
         page = 'home'; render(); toast('Профиль сброшен.', 'good');
       }
     }
