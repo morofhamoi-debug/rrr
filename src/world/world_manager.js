@@ -34,6 +34,8 @@ export class WorldManager {
   }
 
   heightAt(x, z) { return this.terrain.heightAt(x, z); }
+  groundHeightAt(x, z) { return this.houses.groundHeightAt(x, z); }
+  resolvePosition(previous, candidate, radius) { return this.houses.resolvePosition(previous, candidate, radius); }
 
   applySettings(settings) {
     this.settings = settings;

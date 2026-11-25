@@ -32,3 +32,11 @@ Ultra-профиль по умолчанию. Процедурные PBR-кар�
 Для мобильных устройств есть автоматические ограничения разрешения рендеринга и теней. Ультра-профиль повышает нагрузку, нагрев и расход батареи; на разных устройствах реальная частота кадров будет отличаться.
 
 Текстуры генерируются процедурно в браузере, а не загружаются из профессиональной фотограмметрической библиотеки. Это максимально детализированная текущая браузерная реализация LEONIDA, но не AAA-графика уровня GTA VI.
+
+## First-person walking and interiors
+
+- Player camera is locked to a 1.68 m eye height with grounded terrain following; free-flight and vertical movement controls are removed.
+- Walking speed is 2.7 m/s and sprint speed is 5.4 m/s.
+- House collision volumes leave a clear front-door passage; the front doors are modelled open.
+- Both residences include furnished interiors, floorboards, kitchen fittings, living-room furniture, dining furniture, shelving, wall art, plants and warm interior lights.
+- First-person arms and hands are implemented as separate modules in `src/character/`, with procedural skin microtexture and a subtle walking animation.
