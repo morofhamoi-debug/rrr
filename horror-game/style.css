@@ -292,3 +292,5 @@ body[data-theme="light"] .game-message.bad{color:#245c9c}
 
 .coin-disc{transform:rotateY(0deg)}
 .result-marker{transform:translateX(-50%)}
+
+@keyframes plinkoFallback{0%{top:7px;left:50%}25%{top:95px;left:39%}50%{top:180px;left:58%}75%{top:250px;left:45%}100%{top:300px;left:var(--final-left,50%)}}
