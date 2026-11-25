@@ -108,7 +108,7 @@
   }
 
   function updateNav() {
-    document.querySelectorAll('.nav-btn').forEach(function (button) {
+    document.querySelectorAll('.nav-btn,.dock-btn').forEach(function (button) {
       var isPage = button.getAttribute('data-page');
       var isGame = button.getAttribute('data-game');
       button.classList.toggle('active', (page === 'game' && isGame === currentGame) || (page !== 'game' && isPage === page));
@@ -131,7 +131,7 @@
   function placeStake(amount, label) {
     amount = round2(Number(amount));
     if (!Number.isFinite(amount) || amount < 1) { toast('Минимальная ставка — 1 ₽.', 'bad'); return false; }
-    if (amount > 5000) { toast('Лимит одной демо-ставки — 5 000 ₽.', 'bad'); return false; }
+    if (amount > 5000) { toast('Лимит одной виртуальной ставки — 5 000 ₽.', 'bad'); return false; }
     if (amount > state.balance) { toast('Недостаточно виртуальных кредитов.', 'bad'); return false; }
     state.balance = round2(state.balance - amount);
     pushOperation('Ставка', -amount, label);
@@ -338,10 +338,10 @@
 
   function renderLive() {
     var rows = state.history.slice(0, 10).map(function (h) { return '<div class="list-card"><span class="list-icon">' + (h.payout > 0 ? '↗' : '↘') + '</span><span><strong>Ты сыграл в ' + esc(h.game) + '</strong><small>' + timeLabel(h.date) + ' · ' + esc(h.result) + '</small></span><span class="list-right">' + (h.net > 0 ? '+' : '') + money(h.net) + ' ₽</span></div>'; }).join('');
-    var demos = [
+    var activitySamples = [
       ['ShadowFox', 'Mines', '2,4×'], ['RedCrow', 'Crash', '1,8×'], ['NightWolf', 'Dice', '1,3×'], ['GhostLine', 'Plinko', '0,8×']
-    ].map(function (x) { return '<div class="list-card"><span class="list-icon">◈</span><span><strong>' + x[0] + ' · ' + x[1] + '</strong><small>Синтетический пример интерфейса</small></span><span class="list-right">' + x[2] + '</span></div>'; }).join('');
-    return '<div class="page-head"><div><div class="eyebrow">PLATFORM / LIVE</div><h1>Live</h1><p>Демонстрационная лента. Она не подключена к другим игрокам и не показывает реальные ставки.</p></div><span class="demo-pill">ПРИМЕРЫ</span></div><div class="surface"><div class="surface-head"><strong>Твои последние раунды</strong><span>LOCAL ACTIVITY</span></div>' + (rows || '<div class="empty-hint">Здесь появятся твои события после первой игры.</div>') + '</div><div class="spacer"></div><div class="surface"><div class="surface-head"><strong>Примеры событий платформы</strong><span>НЕ РЕАЛЬНЫЕ ИГРОКИ</span></div>' + demos + '</div>';
+    ].map(function (x) { return '<div class="list-card"><span class="list-icon">◈</span><span><strong>' + x[0] + ' · ' + x[1] + '</strong><small>Пример данных, не реальные игроки</small></span><span class="list-right">' + x[2] + '</span></div>'; }).join('');
+    return '<div class="page-head"><div><div class="eyebrow">PLATFORM / LIVE</div><h1>Live</h1><p>Примеры активности интерфейса. Лента не подключена к другим игрокам.</p></div><span class="demo-pill">ПРИМЕРЫ</span></div><div class="surface"><div class="surface-head"><strong>Твои последние раунды</strong><span>LOCAL ACTIVITY</span></div>' + (rows || '<div class="empty-hint">Здесь появятся твои события после первой игры.</div>') + '</div><div class="spacer"></div><div class="surface"><div class="surface-head"><strong>Примеры событий платформы</strong><span>НЕ РЕАЛЬНЫЕ ИГРОКИ</span></div>' + activitySamples + '</div>';
   }
 
   function renderLeaderboard() {
