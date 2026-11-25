@@ -1,11 +1,13 @@
 export class TouchControls{
  constructor(camera){
-  this.camera=camera;this.activeLookPointer=null;this.lookPointers=new Map();this.lastLook={x:0,y:0};this.lastPinchDistance=0;
+  this.camera=camera;this.activeLookPointer=null;this.lookPointers=new Map();this.lastLook={x:0,y:0};this.lastPinchDistance=0;this.turnPointers=new Map();
   this.stick=document.querySelector('#move-stick');this.knob=this.stick?.querySelector('.stick-knob');this.lookZone=document.querySelector('#look-zone');
   this.coarse=window.matchMedia?.('(pointer: coarse)').matches||navigator.maxTouchPoints>0;
   document.documentElement.classList.toggle('touch-device',this.coarse);
   if(!this.stick||!this.coarse)return;
-  this.bindJoystick();this.bindLook();this.bindHoldButton('#touch-up',1);this.bindHoldButton('#touch-down',-1);this.bindSprint();
+  this.bindJoystick();this.bindLook();
+  this.bindHoldButton('#touch-up',1);this.bindHoldButton('#touch-down',-1);this.bindSprint();
+  this.bindTurnButton('#touch-turn-left',-1);this.bindTurnButton('#touch-turn-right',1);
  }
  bindJoystick(){
   const update=e=>{const r=this.stick.getBoundingClientRect(),radius=r.width*.34;let x=(e.clientX-(r.left+r.width/2))/radius,y=(e.clientY-(r.top+r.height/2))/radius;const l=Math.hypot(x,y);if(l>1){x/=l;y/=l;}this.knob.style.transform='translate('+x*radius+'px,'+y*radius+'px)';this.camera.setTouchMove(x,-y);};
@@ -39,11 +41,26 @@ export class TouchControls{
   this.lookZone.addEventListener('pointerup',release);this.lookZone.addEventListener('pointercancel',release);this.lookZone.addEventListener('lostpointercapture',release);
  }
  bindHoldButton(selector,direction){
-  const b=document.querySelector(selector),press=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);this.camera.setTouchVertical(direction);b.classList.add('is-pressed');},release=()=>{this.camera.setTouchVertical(0);b.classList.remove('is-pressed');};
+  const b=document.querySelector(selector);if(!b)return;
+  const press=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);this.camera.setTouchVertical(direction);b.classList.add('is-pressed');};
+  const release=()=>{this.camera.setTouchVertical(0);b.classList.remove('is-pressed');};
   b.addEventListener('pointerdown',press);b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);
  }
  bindSprint(){
-  const b=document.querySelector('#touch-sprint'),press=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);this.camera.setTouchSprint(true);b.classList.add('is-pressed');},release=()=>{this.camera.setTouchSprint(false);b.classList.remove('is-pressed');};
+  const b=document.querySelector('#touch-sprint');if(!b)return;
+  const press=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);this.camera.setTouchSprint(true);b.classList.add('is-pressed');};
+  const release=()=>{this.camera.setTouchSprint(false);b.classList.remove('is-pressed');};
+  b.addEventListener('pointerdown',press);b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);
+ }
+ bindTurnButton(selector,direction){
+  const b=document.querySelector(selector);if(!b)return;
+  const press=e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);this.turnPointers.set(e.pointerId,direction);this.camera.setTouchTurn(direction);b.classList.add('is-pressed');};
+  const release=e=>{
+   if(e?.pointerId!==undefined&&!this.turnPointers.has(e.pointerId))return;
+   if(e?.pointerId!==undefined)this.turnPointers.delete(e.pointerId);
+   const values=[...this.turnPointers.values()];this.camera.setTouchTurn(values.length?values[values.length-1]:0);
+   if(!values.includes(direction))b.classList.remove('is-pressed');
+  };
   b.addEventListener('pointerdown',press);b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);
  }
 }
