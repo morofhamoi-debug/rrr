@@ -36,7 +36,7 @@ export class Game {
     this.audio.start();
     this.engine.camera.enableInput(true);
     const hint = this.engine.camera.isTouchDevice
-      ? 'Движение — джойстик слева. Обзор — свайп справа. Масштаб — жест двумя пальцами.'
+      ? 'Движение — джойстик слева. Свайп влево/вправо — поворот камеры. Кнопки ↶ / ↷ — поворот налево/направо. Два пальца — зум.'
       : 'WASD — движение. Мышь — обзор. Колесо — приближение.';
     this.toast(hint);
   }
