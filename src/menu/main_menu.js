@@ -53,8 +53,8 @@ export class MainMenu {
           <header class="subscreen-header"><div><div class="eyebrow">FIELD NAVIGATION</div><h1>Управление</h1></div><button id="controls-back" class="text-button">← Назад</button></header>
           <div class="controls-grid">
             <div class="control-card"><span class="control-symbol">W A S D</span><b>Перемещение</b><small>Свободное движение камеры по территории</small></div>
-            <div class="control-card"><span class="control-symbol">MOUSE / TOUCH</span><b>Осмотр</b><small>Мышь на ПК или свайп по правой части экрана</small></div>
-            <div class="control-card"><span class="control-symbol">PINCH</span><b>Зум на телефоне</b><small>Сведите или разведите два пальца на правой стороне</small></div>
+            <div class="control-card"><span class="control-symbol">MOUSE / TOUCH</span><b>Осмотр и поворот</b><small>На телефоне свайп влево поворачивает влево, свайп вправо — вправо. Кнопки ↶ / ↷ дают точный поворот.</small></div>
+            <div class="control-card"><span class="control-symbol">PINCH</span><b>Зум на телефоне</b><small>Сведите или разведите два пальца в зоне обзора справа</small></div>
             <div class="control-card"><span class="control-symbol">E / Q</span><b>Высота</b><small>Подъём и спуск камеры, на телефоне — кнопки справа</small></div>
             <div class="control-card"><span class="control-symbol">SHIFT / »</span><b>Ускорение</b><small>Удерживайте для ускоренного движения</small></div>
             <div class="control-card"><span class="control-symbol">T</span><b>Время суток</b><small>Переключение освещения на следующий час</small></div>
