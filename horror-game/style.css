@@ -8,3 +8,80 @@
 @media(max-width:760px){.topbar{height:64px;padding:0 14px}.brand{min-width:0}.brand-symbol{width:32px;height:32px}.brand-name{font-size:12px}.top-actions{gap:7px}.balance-chip{height:35px;padding:0 9px;font-size:10px;gap:5px}.profile-chip{height:35px;padding:0 7px}.profile-chip #topName,.profile-chip .chevron{display:none}.layout{display:block}.sidebar{position:fixed;z-index:40;top:auto;bottom:0;left:0;right:0;width:100%;height:64px;min-height:0;overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row;align-items:center;gap:4px;padding:5px 9px calc(5px + env(safe-area-inset-bottom));background:#101015f5;border-right:0;border-top:1px solid #ffffff16;backdrop-filter:blur(16px)}.sidebar .nav-label,.sidebar .sidebar-bottom{display:none}.sidebar .nav-btn{flex:0 0 auto;width:auto;height:46px;min-width:54px;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px 8px;margin:0;font-size:7px;white-space:nowrap}.sidebar .nav-icon{font-size:14px;width:auto}.sidebar .nav-tag,.sidebar .live-tag{display:none}.main-content{padding:19px 13px 82px}.page-head h1{font-size:25px}.hero{padding:25px 20px;min-height:245px}.hero h1{font-size:38px}.hero-emblem{font-size:95px;right:0;opacity:.7}.metrics{gap:8px}.metric{padding:12px}.metric-value{font-size:17px}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.game-art{height:94px}.game-art .art-glyph{font-size:39px}.game-info{padding:10px}.game-info strong{font-size:9px}.game-info small{font-size:7px}.two-col{grid-template-columns:1fr}.game-layout{grid-template-columns:1fr}.game-aside{grid-template-columns:repeat(2,minmax(0,1fr))}.game-aside .side-note{grid-column:1/-1}.game-panel{padding:12px}.game-stage{min-height:300px;padding:13px}.mines-grid{gap:5px;grid-template-columns:repeat(5,minmax(34px,52px))}.mine-cell{border-radius:6px}.site-footer{flex-direction:column;gap:8px;margin-top:30px}.profile-hero{padding:15px}.profile-hero .profile-id{display:none}.bonus-card{align-items:flex-start;flex-wrap:wrap}.bonus-card button{margin-left:71px}.field-row{grid-template-columns:1fr}.toast-root{right:12px;bottom:78px;left:12px}.toast{max-width:none}.wheel-wrap{width:205px;height:205px}}
 @media(max-width:390px){.brand-name small{display:none}.balance-chip{font-size:9px}.game-aside{grid-template-columns:1fr}.game-aside .side-note{grid-column:auto}.game-grid{gap:7px}.game-info{gap:4px}.game-info strong{font-size:8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* Mobile-first refinements for 1WIN DEMO */
+@media(max-width:760px){
+  html,body{width:100%;overscroll-behavior-x:none}
+  .app-shell{width:100%;overflow:hidden}
+  .topbar{height:60px;padding:0 12px;gap:8px}
+  .brand{gap:8px}
+  .brand-symbol{width:31px;height:31px;border-radius:10px;font-size:15px}
+  .brand-name{font-size:13px;letter-spacing:.6px}
+  .brand-name small{font-size:7px;letter-spacing:1.4px}
+  .top-actions{gap:6px}
+  .balance-chip{height:34px;padding:0 8px;border-radius:9px;font-size:10px}
+  .profile-chip{height:34px;width:34px;justify-content:center;padding:0;border-radius:9px}
+  .profile-chip .avatar-mini{width:23px;height:23px}
+  .main-content{padding:15px 12px calc(92px + env(safe-area-inset-bottom))}
+  .sidebar{height:calc(66px + env(safe-area-inset-bottom));padding:5px 7px calc(5px + env(safe-area-inset-bottom));gap:4px;scrollbar-width:none}
+  .sidebar::-webkit-scrollbar{display:none}
+  .sidebar .nav-btn{min-width:58px;height:48px;padding:5px 7px;border-radius:9px;font-size:8px;flex:0 0 auto;scroll-snap-align:center}
+  .sidebar .nav-icon{font-size:16px}
+  .sidebar{scroll-snap-type:x proximity}
+  .page-head{align-items:flex-start;margin-top:4px;gap:9px}
+  .page-head h1{font-size:24px;letter-spacing:-.8px}
+  .page-head p{font-size:10px}
+  .hero{min-height:230px;padding:22px 17px;border-radius:13px}
+  .hero h1{font-size:clamp(32px,9vw,39px);letter-spacing:-1.8px}
+  .hero p{font-size:10px;max-width:270px}
+  .hero-emblem{font-size:78px;right:-7px;opacity:.55}
+  .hero-actions{flex-wrap:wrap;gap:8px}
+  .primary-btn,.secondary-btn,.soft-btn{min-height:43px;padding:0 13px;font-size:10px}
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 22px}
+  .metric{padding:11px;border-radius:10px}
+  .metric-value{font-size:17px;margin-top:8px}
+  .game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .game-card{border-radius:10px}
+  .game-art{height:88px}
+  .game-info{padding:10px 9px;min-height:57px}
+  .game-info strong{font-size:10px}
+  .game-info small{font-size:7px}
+  .game-layout{gap:10px}
+  .game-panel{padding:10px;border-radius:11px}
+  .game-title-row{margin-bottom:12px}
+  .game-title h2{font-size:14px}
+  .game-stage{min-height:270px;padding:11px;border-radius:9px}
+  .mines-grid{width:min(100%,310px);grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+  .mine-cell{min-width:0;font-size:15px}
+  .game-aside{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .control-box{padding:11px;border-radius:10px}
+  .field-input,.field-select,.field-textarea{min-height:43px;font-size:16px;padding:10px}
+  .field-label{font-size:9px}
+  .full-btn{min-height:44px}
+  .table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:440px}
+  .surface{padding:13px}
+  .section-row h2{font-size:15px}
+  .site-footer{font-size:7px;padding-bottom:10px}
+  .toast-root{bottom:calc(76px + env(safe-area-inset-bottom));left:10px;right:10px}
+}
+@media(max-width:420px){
+  .topbar{padding:0 9px}
+  .brand-name{font-size:12px}
+  .balance-chip{font-size:9px;padding:0 6px}
+  .hero{min-height:220px}
+  .hero h1{font-size:33px}
+  .game-aside{grid-template-columns:1fr}
+  .game-aside .side-note{grid-column:auto}
+  .game-stage{min-height:250px}
+  .multiplier{font-size:44px}
+  .case-grid{gap:6px}
+  .case-card{padding:12px 6px}
+  .flip-choice{width:94px;height:94px}
+  .bonus-card{gap:11px}
+  .bonus-card button{margin-left:0;width:100%}
+  .field-row{grid-template-columns:1fr}
+}
+@media(hover:none){
+  .game-card:hover,.primary-btn:hover,.secondary-btn:hover,.soft-btn:hover{transform:none}
+  .nav-btn,.game-card,.mine-cell,.flip-choice{touch-action:manipulation}
+}
