@@ -1,4 +1,3 @@
-import '../style.css';
 import { Game } from './game.js';
 import { SettingsPanel } from './menu/settings.js';
 import { MainMenu } from './menu/main_menu.js';
@@ -10,11 +9,17 @@ const loading = new LoadingScreen(document.querySelector('#loading-screen'));
 const game = new Game(canvas);
 const settings = new SettingsPanel(menuRoot, game);
 const menu = new MainMenu(menuRoot, game, settings, loading);
+
 menu.mount();
-game.setStateListener((state) => document.querySelector('#hud').classList.toggle('is-hidden', state !== 'playing'));
+game.setStateListener((state) => {
+  document.querySelector('#hud').classList.toggle('is-hidden', state !== 'playing');
+});
 document.querySelector('#hud-menu').addEventListener('click', () => game.openMenu());
 document.addEventListener('keydown', (event) => {
-  if (event.code === 'Escape' && game.isPlaying()) { event.preventDefault(); game.openMenu(); }
+  if (event.code === 'Escape' && game.isPlaying()) {
+    event.preventDefault();
+    game.openMenu();
+  }
   if (event.code === 'KeyT' && game.isPlaying()) game.world.advanceTime(1.5);
 });
 await game.init(settings.get());
