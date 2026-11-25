@@ -7,6 +7,9 @@ export class FirstPersonHands {
     this.root = new THREE.Group();
     this.root.name = 'First person arms and hands';
     this.camera.add(this.root);
+    this.fillLight = new THREE.PointLight(0xffd6b7, .62, 2.4, 2);
+    this.fillLight.position.set(0, .35, -.45);
+    this.camera.add(this.fillLight);
     this.left = createDetailedHand(-1);
     this.right = createDetailedHand(1);
     this.left.position.set(-.245, -.295, -.48);
@@ -38,6 +41,7 @@ export class FirstPersonHands {
 
   dispose() {
     this.camera.remove(this.root);
+    this.camera.remove(this.fillLight);
     this.root.traverse((obj) => {
       if (obj.isMesh) obj.geometry.dispose();
     });
