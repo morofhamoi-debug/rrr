@@ -94,6 +94,49 @@ function makeLivingRoom(parent, width, depth) {
   cylinder(parent, .32, .16, .42, [width / 2 - 1.0, 2.75, depth / 2 - 1.1], mat.fabricLight);
 }
 
+function makeDining(parent, width, depth) {
+  const x = width / 2 - 3.0, z = 1.0;
+  box(parent, [2.35, .16, 1.35], [x, 1.48, z], mat.wood, true);
+  for (const dx of [-.95, .95]) for (const dz of [-.48, .48]) box(parent, [.12, .8, .12], [x + dx, 1.0, z + dz], mat.darkWood);
+  for (const side of [-1, 1]) for (const dz of [-.43, .43]) {
+    const chairX = x + side * 1.65;
+    box(parent, [.68, .16, .72], [chairX, 1.02, z + dz], mat.fabricLight, true);
+    box(parent, [.68, .78, .13], [chairX, 1.42, z + dz - side * .25], mat.wood);
+    for (const legX of [-.24, .24]) for (const legZ of [-.24, .24]) box(parent, [.07, .72, .07], [chairX + legX, .63, z + dz + legZ], mat.darkWood);
+  }
+  cylinder(parent, .22, .28, .1, [x, 1.62, z], mat.ceramic);
+  for (let i = 0; i < 4; i++) {
+    const fruit = new THREE.Mesh(new THREE.SphereGeometry(.095, 12, 10), i % 2 ? mat.fabric : mat.warm);
+    fruit.position.set(x + (i - 1.5) * .12, 1.75, z + (i % 2 ? .06 : -.06));
+    parent.add(fruit);
+  }
+}
+
+function makeBookcaseAndPlants(parent, width, depth) {
+  const x = -width / 2 + .75, z = -depth / 2 + 1.4;
+  box(parent, [.52, 3.3, 2.3], [x, 2.32, z], mat.wood, true);
+  for (let y = 1.15; y < 3.8; y += .68) {
+    box(parent, [.62, .075, 2.25], [x + .03, y, z], mat.darkWood);
+    for (let i = 0; i < 5; i++) box(parent, [.34, .48 + (i % 2) * .1, .24], [x + .05, y + .27, z - .82 + i * .4], i % 2 ? mat.fabric : mat.fabricLight);
+  }
+  const px = width / 2 - .9, pz = depth / 2 - 1.0;
+  cylinder(parent, .32, .24, .52, [px, .95, pz], mat.ceramic);
+  cylinder(parent, .28, .28, .08, [px, 1.22, pz], mat.darkWood);
+  for (let i = 0; i < 7; i++) {
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 10), mat.fabric);
+    leaf.position.set(px + Math.sin(i * .9) * .28, 1.75 + (i % 3) * .16, pz + Math.cos(i * .9) * .24);
+    leaf.scale.set(.12, .52, .15); leaf.rotation.z = Math.sin(i * .9) * .5; parent.add(leaf);
+  }
+}
+
+function makeWallArt(parent, width, depth) {
+  const z = -depth / 2 + .24;
+  box(parent, [2.15, 1.35, .08], [-width / 2 + 3.0, 3.25, z], mat.wood);
+  box(parent, [1.92, 1.12, .025], [-width / 2 + 3.0, 3.25, z + .055], mat.fabric);
+  box(parent, [1.3, .9, .05], [width / 2 - 2.2, 3.2, z], mat.wood);
+  box(parent, [1.08, .68, .025], [width / 2 - 2.2, 3.2, z + .055], mat.fabricLight);
+}
+
 function makeDetails(parent, width, depth, twoStorey) {
   // Baseboards, sockets and ceiling lights.
   for (const x of [-width / 2 + .2, width / 2 - .2]) {
@@ -102,6 +145,7 @@ function makeDetails(parent, width, depth, twoStorey) {
   box(parent, [width - .4, .18, .1], [0, .76, -depth / 2 + .2], mat.wood);
   box(parent, [width - .4, .18, .1], [0, .76, depth / 2 - .2], mat.wood);
   const ceilingY = twoStorey ? 8.7 : 6.3;
+  box(parent, [width - .25, .16, depth - .25], [0, ceilingY, 0], mat.ceiling);
   box(parent, [1.0, .06, 1.0], [0, ceilingY - .18, 0], mat.warm);
   cylinder(parent, .025, .025, .3, [0, ceilingY - .4, 0], mat.metal);
   const light = new THREE.PointLight(0xffd6a4, 18, 17, 2);
@@ -120,6 +164,9 @@ export function addHouseInterior(parent, width, depth, wallHeight, twoStorey = f
   }
   makeKitchen(parent, width, depth);
   makeLivingRoom(parent, width, depth);
+  makeDining(parent, width, depth);
+  makeBookcaseAndPlants(parent, width, depth);
+  makeWallArt(parent, width, depth);
   makeDetails(parent, width, depth, twoStorey);
 
   if (twoStorey) {
