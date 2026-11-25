@@ -467,32 +467,34 @@
     var stake = readStake();
     if (!placeStake(stake, 'Crash')) return;
     if (runtime.crashTimer) clearInterval(runtime.crashTimer);
-    var x = rand();
-    var crashAt = Math.max(1, Math.min(35, Math.floor((0.985 / Math.max(0.015, 1 - x)) * 100) / 100));
-    runtime.crash = { active: true, stake: stake, crashAt: crashAt, current: 1, last: crashAt, message: 'Раунд идёт. Забери результат до остановки.' };
+    var rawCrash = 0.985 / Math.max(0.015, 1 - rand());
+    var crashAt = Math.max(1.35, Math.min(35, Math.floor(rawCrash * 100) / 100));
+    runtime.crash = { active: true, stake: stake, crashAt: crashAt, current: 1, last: crashAt, message: 'Раунд запущен. Множитель плавно растёт.' };
     crashStartedAt = Date.now();
     render();
     runtime.crashTimer = setInterval(function () {
       var r = runtime.crash;
       if (!r || !r.active) { clearInterval(runtime.crashTimer); return; }
       var elapsed = (Date.now() - crashStartedAt) / 1000;
-      r.current = Math.min(35, Math.floor(Math.exp(elapsed * 0.46) * 100) / 100);
+      r.current = Math.min(r.crashAt, Math.floor(Math.exp(elapsed * 0.15) * 100) / 100);
       var multNode = document.getElementById('crashMultiplier');
       var statusNode = document.getElementById('crashStatus');
       var pathNode = document.getElementById('crashPath');
       if (multNode) multNode.innerHTML = r.current.toFixed(2) + '<small>×</small>';
       if (statusNode) statusNode.textContent = 'РАУНД ИДЁТ · ЗАБРАТЬ МОЖНО СЕЙЧАС';
       if (pathNode) {
-        var pct = Math.min(1, (r.current - 1) / 12);
+        var pct = Math.max(0, Math.min(1, Math.log(Math.max(1, r.current)) / Math.max(0.01, Math.log(r.crashAt))));
         var y = 184 - pct * 168;
         var xPos = Math.min(500, 60 + pct * 420);
         pathNode.setAttribute('d', 'M0 185 Q' + Math.max(40, xPos * .45) + ' ' + (185 - pct * 28) + ' ' + xPos + ' ' + y);
       }
       if (r.current >= r.crashAt) finishCrashLoss();
-    }, 55);
+    }, 45);
   }
 
-  function finishCrashLoss() {
+
+
+    function finishCrashLoss() {
     var r = runtime.crash;
     if (!r || !r.active) return;
     r.active = false; r.last = r.crashAt; r.message = 'Краш на ' + r.crashAt.toFixed(2) + '×. В этом раунде ставка потеряна.';
@@ -516,51 +518,93 @@
   }
 
   function rollDice() {
+    if (runtime.diceBusy) return;
     var stake = readStake();
-    var target = Number(document.getElementById('diceTarget').value);
-    var direction = document.getElementById('diceDirection').value;
-    if (!Number.isInteger(target) || target < 5 || target > 95 || !placeStake(stake, 'Dice')) return;
+    var targetField = document.getElementById('diceTarget');
+    var directionField = document.getElementById('diceDirection');
+    var target = targetField ? Number(targetField.value) : 50;
+    var direction = directionField ? directionField.value : 'under';
+    if (!Number.isInteger(target) || target < 5 || target > 95) { toast('Выбери цель от 5 до 95.', 'bad'); return; }
+    if (!placeStake(stake, 'Dice')) return;
     var roll = randInt(100);
     var probability = direction === 'under' ? target / 100 : (100 - target) / 100;
     var win = direction === 'under' ? roll < target : roll >= target;
-    var mult = 0.98 / probability;
+    var mult = 0.97 / probability;
     var payout = win ? round2(stake * mult) : 0;
-    runtime.diceResult = { roll: roll, target: target, win: win, message: win ? 'Попадание! Выплата ' + money(payout) + ' ₽ · ' + mult.toFixed(2) + '×.' : 'Не совпало. Попробуй другой прогноз.', };
-    settleRound('dice', stake, payout, win ? 'ПОБЕДА' : 'ПРОИГРЫШ', 'Выпало ' + roll);
+    runtime.diceBusy = true;
+    var session = sessionVersion;
+    runtime.diceResult = { roll: roll, target: target, direction: direction, win: win, payout: payout, message: 'Кубик катится…' };
     render();
+    if (runtime.diceInterval) clearInterval(runtime.diceInterval);
+    runtime.diceInterval = setInterval(function () {
+      if (session !== sessionVersion || !runtime.diceBusy) { clearInterval(runtime.diceInterval); return; }
+      var node = document.getElementById('diceValue');
+      if (node) node.textContent = String(randInt(100)).padStart(2, '0');
+    }, 75);
+    runtime.diceTimeout = setTimeout(function () {
+      if (session !== sessionVersion) return;
+      if (runtime.diceInterval) clearInterval(runtime.diceInterval);
+      runtime.diceInterval = null;
+      runtime.diceBusy = false;
+      runtime.diceResult.message = win ? 'Попадание! Начислено ' + money(payout) + ' ₽ · ' + mult.toFixed(2) + '×.' : 'Число вне выигрышной зоны. Раунд завершён.';
+      settleRound('dice', stake, payout, win ? 'ПОБЕДА' : 'ПРОИГРЫШ', 'Выпало ' + String(roll).padStart(2, '0'));
+      if (page === 'game' && currentGame === 'dice') render();
+      else toast('Dice: выпало ' + String(roll).padStart(2, '0'), win ? 'good' : 'bad');
+    }, 2700);
   }
 
-  function dropPlinko() {
+
+
+    function dropPlinko() {
     if (runtime.plinkoBusy) return;
     var stake = readStake();
-    var risk = document.getElementById('plinkoRisk').value;
+    var riskField = document.getElementById('plinkoRisk');
+    var risk = riskField ? riskField.value : (runtime.plinkoRisk || 'low');
     if (!placeStake(stake, 'Plinko')) return;
-    var tables = {
-      low: [1.7, 1.3, 1, 0.8, 0.7, 0.8, 1, 1.3, 1.7],
-      medium: [6, 2.2, 1.3, 0.65, 0.35, 0.65, 1.3, 2.2, 6],
-      high: [15, 4, 1.5, 0.3, 0.1, 0.3, 1.5, 4, 15]
-    };
-    runtime.plinkoRisk = risk;
+    var tables = plinkoMultipliers(risk);
+    var path = [];
     var slot = 0;
-    for (var i = 0; i < 8; i++) if (rand() >= 0.5) slot++;
-    var mult = tables[risk][slot];
+    for (var i = 0; i < 12; i++) {
+      var step = rand() >= 0.5 ? 1 : 0;
+      path.push(step);
+      slot += step;
+    }
+    var mult = tables[slot];
     var payout = round2(stake * mult);
+    runtime.plinkoRisk = risk;
     runtime.plinkoBusy = true;
     var session = sessionVersion;
-    runtime.plinkoResult = { message: 'Шар попал в слот ' + (slot + 1) + ' · ' + mult.toFixed(2) + '× · ' + money(payout) + ' ₽.', slot: slot, mult: mult };
+    runtime.plinkoResult = { message: 'Шар проходит по траектории…', slot: slot, mult: mult, path: path };
     render();
     var ball = document.getElementById('plinkoBall');
-    if (ball) { ball.style.display = 'block'; ball.style.setProperty('--ball-end', (slot / 8 * 100) + '%'); ball.classList.add('drop'); }
+    if (ball && typeof ball.animate === 'function') {
+      var frames = [{ left: '50%', top: '7px', offset: 0 }];
+      var rights = 0;
+      path.forEach(function (step, i) {
+        rights += step;
+        var left = Math.max(5, Math.min(95, 50 + (rights - (i + 1) / 2) * 7.1));
+        frames.push({ left: left + '%', top: (12 + (i + 1) * 23) + 'px', offset: (i + 1) / 13 });
+      });
+      frames.push({ left: ((slot + 0.5) / 13 * 100) + '%', top: '300px', offset: 1 });
+      ball.style.display = 'block';
+      ball.animate(frames, { duration: 4700, easing: 'cubic-bezier(.18,.68,.22,1)', fill: 'forwards' });
+    } else if (ball) {
+      ball.style.display = 'block';
+      ball.classList.add('drop');
+    }
     setTimeout(function () {
       if (session !== sessionVersion) return;
       runtime.plinkoBusy = false;
-      settleRound('plinko', stake, payout, payout > 0 ? 'РЕЗУЛЬТАТ' : 'ПРОИГРЫШ', slot + 1 + ' слот · ' + mult.toFixed(2) + '×');
+      runtime.plinkoResult.message = 'Слот ' + (slot + 1) + ' · ' + mult.toFixed(2) + '× · начислено ' + money(payout) + ' ₽.';
+      settleRound('plinko', stake, payout, payout > 0 ? 'РЕЗУЛЬТАТ' : 'ПУСТО', (slot + 1) + ' слот · ' + mult.toFixed(2) + '×');
       if (page === 'game' && currentGame === 'plinko') render();
-      else toast('Plinko: ' + mult.toFixed(2) + '×', payout > 0 ? 'good' : 'bad');
-    }, 950);
+      else toast('Plinko: слот ' + (slot + 1) + ' · ' + mult.toFixed(2) + '×', payout > 0 ? 'good' : 'bad');
+    }, 4950);
   }
 
-  function spinWheel() {
+
+
+    function spinWheel() {
     if (runtime.wheelBusy) return;
     var stake = readStake();
     if (!placeStake(stake, 'Wheel')) return;
@@ -570,9 +614,9 @@
     var payout = round2(stake * mult);
     runtime.wheelBusy = true;
     var session = sessionVersion;
-    var totalAngle = 360 * 8 + (360 - (index * 36 + 18));
-    var wheelDuration = state.reducedMotion ? 0 : 7800;
-    runtime.wheelResult = { angle: 0, message: 'Колесо набирает скорость...', index: index, mult: mult };
+    var totalAngle = 360 * 10 + (360 - (index * 36 + 18));
+    var wheelDuration = 9800;
+    runtime.wheelResult = { angle: 0, message: 'Колесо набирает скорость…', index: index, mult: mult };
     render();
     requestAnimationFrame(function () {
       var wheel = document.getElementById('wheelDisc');
@@ -588,8 +632,12 @@
       settleRound('wheel', stake, payout, payout > 0 ? 'РЕЗУЛЬТАТ' : 'ПУСТО', mult.toFixed(2) + '×');
       if (page === 'game' && currentGame === 'wheel') render();
       else toast('Wheel: ' + mult.toFixed(2) + '×', payout > 0 ? 'good' : 'bad');
-    }, wheelDuration + 120);
-  }function openCase(id) {
+    }, wheelDuration + 150);
+  }
+
+
+
+  function openCase(id) {
     if (runtime.caseBusy) return;
     var cases = { starter: 100, night: 250, legend: 500 };
     var cost = cases[id];
@@ -598,37 +646,53 @@
       { m: 0, w: 8 }, { m: 0.3, w: 18 }, { m: 0.5, w: 24 }, { m: 0.8, w: 22 },
       { m: 1, w: 14 }, { m: 1.5, w: 7 }, { m: 2, w: 4 }, { m: 3, w: 2 }, { m: 5, w: 1 }
     ];
-    var pick = rand() * 100;
-    var sum = 0;
-    var mult = 0;
+    var pick = rand() * 100, sum = 0, mult = 0;
     for (var i = 0; i < drops.length; i++) { sum += drops[i].w; if (pick < sum) { mult = drops[i].m; break; } }
     var payout = round2(cost * mult);
     runtime.caseBusy = true;
     var session = sessionVersion;
-    runtime.caseResult = { message: 'Кейс открывается...', mult: mult };
+    runtime.caseResult = { message: 'Кейс открывается…', mult: mult, payout: payout };
     render();
     setTimeout(function () {
       if (session !== sessionVersion) return;
       runtime.caseBusy = false;
-      runtime.caseResult.message = 'Выпало ' + mult.toFixed(2) + '× · ' + money(payout) + ' ₽.';
+      runtime.caseResult.message = 'Выпало ' + mult.toFixed(2) + '× · начислено ' + money(payout) + ' ₽.';
       settleRound('cases', cost, payout, payout > 0 ? 'ОТКРЫТ' : 'ПУСТО', mult.toFixed(2) + '×');
       if (page === 'game' && currentGame === 'cases') render();
       else toast('Кейс: ' + mult.toFixed(2) + '×', payout > 0 ? 'good' : 'bad');
-    }, 1100);
+    }, 3800);
   }
 
-  function flipCoin(face) {
+
+
+    function flipCoin(face) {
+    if (runtime.coinBusy) return;
     var stake = readStake();
     if (!placeStake(stake, 'Coinflip')) return;
     var result = rand() < 0.5 ? 'heads' : 'tails';
     var win = result === face;
-    var payout = win ? round2(stake * 1.96) : 0;
-    runtime.coinResult = { face: result, win: win, message: win ? 'Совпало! Начислено ' + money(payout) + ' ₽.' : 'Не совпало. Раунд завершён.' };
-    settleRound('coinflip', stake, payout, win ? 'ПОБЕДА' : 'ПРОИГРЫШ', result === 'heads' ? 'Орёл' : 'Решка');
+    var payout = win ? round2(stake * 1.94) : 0;
+    runtime.coinBusy = true;
+    var session = sessionVersion;
+    runtime.coinResult = { face: result, win: win, payout: payout, message: 'Монета подброшена…' };
     render();
+    requestAnimationFrame(function () {
+      var coin = document.getElementById('coinDisc');
+      if (coin) coin.style.transform = 'rotateY(' + (360 * 8 + (result === 'tails' ? 180 : 0)) + 'deg)';
+    });
+    runtime.coinTimeout = setTimeout(function () {
+      if (session !== sessionVersion) return;
+      runtime.coinBusy = false;
+      runtime.coinResult.message = win ? 'Совпало! Начислено ' + money(payout) + ' ₽.' : 'Монета остановилась на другой стороне. Раунд завершён.';
+      settleRound('coinflip', stake, payout, win ? 'ПОБЕДА' : 'ПРОИГРЫШ', result === 'heads' ? 'Орёл' : 'Решка');
+      if (page === 'game' && currentGame === 'coinflip') render();
+      else toast('Coinflip: ' + (result === 'heads' ? 'орёл' : 'решка'), win ? 'good' : 'bad');
+    }, 3250);
   }
 
-  function claimBonus() {
+
+
+    function claimBonus() {
     if (state.lastBonus === todayKey()) { toast('Сегодня бонус уже получен.', 'bad'); return; }
     state.lastBonus = todayKey();
     state.balance = round2(state.balance + 300);
@@ -696,12 +760,14 @@
     else if (action === 'send-support') sendSupport();
     else if (action === 'toggle-game-menu') { openGameMenu(); }
     else if (action === 'close-game-menu') { closeGameMenu(); }
-    else if (action === 'toggle-theme') { state.theme = state.theme === 'light' ? 'dark' : 'light'; save(); render(); toast(state.theme === 'light' ? 'Светлая тема включена.' : 'Тёмная тема включена.'); }
     else if (action === 'toggle-sound') { state.sound = !state.sound; save(); render(); toast('Настройка звука обновлена.'); }
     else if (action === 'toggle-motion') { state.reducedMotion = !state.reducedMotion; save(); render(); toast('Настройка анимации обновлена.'); }
     else if (action === 'reset-demo') {
       if (window.confirm('Сбросить профиль, баланс и всю локальную историю?')) {
         if (runtime.crashTimer) clearInterval(runtime.crashTimer);
+        if (runtime.diceInterval) clearInterval(runtime.diceInterval);
+        if (runtime.diceTimeout) clearTimeout(runtime.diceTimeout);
+        if (runtime.coinTimeout) clearTimeout(runtime.coinTimeout);
         sessionVersion += 1;
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
         state = Object.assign({}, defaultState, { playerId: '1W-' + String(Math.floor(Math.random() * 900000 + 100000)) });
@@ -726,7 +792,7 @@
   document.addEventListener('change', function (event) {
     if (event.target && event.target.id === 'plinkoRisk') {
       runtime.plinkoRisk = event.target.value;
-      var slotValues = { low: [1.7, 1.3, 1, 0.8, 0.7, 0.8, 1, 1.3, 1.7], medium: [6, 2.2, 1.3, 0.65, 0.35, 0.65, 1.3, 2.2, 6], high: [15, 4, 1.5, 0.3, 0.1, 0.3, 1.5, 4, 15] }[runtime.plinkoRisk];
+      var slotValues = plinkoMultipliers(runtime.plinkoRisk);
       document.querySelectorAll('.plinko-slots span').forEach(function (node, i) { if (slotValues) node.textContent = String(Number(slotValues[i].toFixed(2))) + '×'; });
     }
     if (event.target && event.target.id === 'diceDirection') {
