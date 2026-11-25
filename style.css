@@ -240,3 +240,18 @@ button { color: inherit; }
  .move-stick{width:118px;height:118px}.stick-knob{width:48px;height:48px;margin:-24px 0 0 -24px}
  .touch-actions{gap:5px}.touch-action{width:46px;height:54px}.touch-boost{width:52px;height:62px}
 }
+
+
+/* LEONIDA mobile steering pad — explicit directional camera control */
+@media (hover:none) and (pointer:coarse),(max-width:760px){
+ .touch-steering{position:absolute;z-index:7;right:max(14px,env(safe-area-inset-right));bottom:calc(100px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:auto}
+ .touch-steer-buttons{display:flex;gap:7px}
+ .touch-turn{width:57px;height:47px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1px solid rgba(245,236,213,.44);border-radius:12px;background:linear-gradient(155deg,rgba(43,58,43,.96),rgba(12,21,15,.96));color:#f2e9d6;box-shadow:0 7px 22px rgba(0,0,0,.32);touch-action:none;-webkit-tap-highlight-color:transparent}
+ .touch-turn span{font:600 22px/1 'Barlow Condensed',sans-serif;color:#e6a477}
+ .touch-turn small{font-size:6px;letter-spacing:.08em;color:#d5d0bd}
+ .touch-turn.is-pressed{border-color:#e5a176;background:linear-gradient(155deg,#6b4a34,#3a2a20);transform:translateY(1px)}
+}
+@media(max-width:390px){
+ .touch-steering{right:12px;bottom:calc(96px + env(safe-area-inset-bottom))}
+ .touch-turn{width:52px;height:44px}
+}

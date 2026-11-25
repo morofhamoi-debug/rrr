@@ -6,6 +6,7 @@ import { Sky } from './environment/sky.js';
 import { Clouds } from './environment/clouds.js';
 import { Lighting } from './environment/lighting.js';
 import { Weather } from './environment/weather.js';
+import { HouseManager } from './buildings/house_manager.js';
 
 export class WorldManager {
   constructor(scene) {
@@ -17,6 +18,7 @@ export class WorldManager {
     this.clouds = new Clouds(scene);
     this.lighting = new Lighting(scene);
     this.weather = new Weather();
+    this.houses = new HouseManager(scene);
     this.settings = {};
     this.windSpeed = this.weather.windSpeed;
   }
@@ -25,6 +27,7 @@ export class WorldManager {
     this.scene.background = null;
     this.scene.fog = new THREE.FogExp2(0x91a59d, 0.00022);
     this.roads.init();
+    this.houses.init();
     this.applySettings(settings);
     this.terrain.update({ x: 22, z: 78 });
     this.grass.update({ x: 22, z: 78 }, 0, this.weather);
@@ -41,6 +44,7 @@ export class WorldManager {
 
   update(dt, camera) {
     this.weather.update(dt);
+    this.houses.update(camera.position);
     this.windSpeed = this.weather.windSpeed;
     this.terrain.update(camera.position);
     this.grass.update(camera.position, dt, this.weather);
