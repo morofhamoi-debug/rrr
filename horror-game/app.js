@@ -209,7 +209,7 @@
     var note = r ? r.message : 'Выбери количество мин и начни раунд.';
     var messageClass = r && r.messageType ? ' ' + r.messageType : '';
     var board = '<div class="game-stage"><span class="stage-caption">FIELD 5 × 5</span><div class="mines-grid">' + cells + '</div><div class="game-stats"><div class="game-stat"><small>ОТКРЫТО</small><strong>' + (r ? r.opened.length : 0) + '</strong></div><div class="game-stat"><small>МИНЫ</small><strong>' + (r ? r.mineCount : '—') + '</strong></div><div class="game-stat"><small>МНОЖИТЕЛЬ</small><strong>' + (active ? mult.toFixed(2) + '×' : '—') + '</strong></div></div><div class="game-message' + messageClass + '">' + esc(note) + '</div><span class="stage-foot">НАЙДИ КЛЕТКУ · ЗАБЕРИ РАУНД ДО МИНЫ</span></div>';
-    var content = board + '<div class="spacer"></div></div>';
+    var content = board + '<div class="spacer"></div>';
     var aside = '<div class="control-box"><h3>ПАРАМЕТРЫ РАУНДА</h3>' + stakeControl(50) +
       '<div class="field-label"><span>КОЛИЧЕСТВО МИН</span><small>5 × 5</small></div><select class="field-select" id="mineCount"><option value="3"' + (currentMineCount === 3 ? ' selected' : '') + '>3 мины · проще</option><option value="5"' + (currentMineCount === 5 ? ' selected' : '') + '>5 мин · стандарт</option><option value="8"' + (currentMineCount === 8 ? ' selected' : '') + '>8 мин · сложно</option><option value="12"' + (currentMineCount === 12 ? ' selected' : '') + '>12 мин · очень сложно</option><option value="18"' + (currentMineCount === 18 ? ' selected' : '') + '>18 мин · экстремально</option></select>' +
       '<button class="primary-btn full-btn" type="button" data-action="start-mines"' + (active ? ' disabled' : '') + '>НАЧАТЬ РАУНД</button>' +
