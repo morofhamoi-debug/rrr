@@ -142,7 +142,7 @@
   }
 
   function commonHead(title, subtitle, icon) {
-    return '<div class="page-head"><div><div class="eyebrow">HORROR GAME / ИГРОВАЯ ЗОНА</div><h1>' + title + '</h1><p>' + subtitle + '</p></div><span class="demo-pill">● DEMO MODE</span></div>' +
+    return '<div class="page-head"><div><div class="eyebrow">1WIN DEMO / ИГРОВАЯ ЗОНА</div><h1>' + title + '</h1><p>' + subtitle + '</p></div><span class="demo-pill">● DEMO MODE</span></div>' +
       '<div class="game-layout"><section class="game-main"><div class="game-panel"><div class="game-title-row"><div class="game-title"><span class="game-icon">' + icon + '</span><div><h2>' + title + '</h2><p>Все ставки — виртуальные кредиты CR</p></div></div><span class="demo-pill">FREE PLAY</span></div>';
   }
 
@@ -173,7 +173,7 @@
       metric('Победы', money(state.wins), '♛', 'Завершённые раунды') +
       metric('Побед / раундов', state.rounds ? Math.round(state.wins / state.rounds * 100) + '%' : '—', '↗', 'Без прогноза доходности') +
       '</div><div class="section-row"><h2>Популярные игры</h2><span class="tiny-label">CHOOSE YOUR GAME</span></div><div class="game-grid">' + cards + '</div>' +
-      '<div class="two-col"><div class="surface"><div class="surface-head"><strong>Последние события</strong><span>ТВОЯ ИСТОРИЯ</span></div>' + activityMarkup(4) + '</div><div class="surface"><div class="surface-head"><strong>Играй осознанно</strong><span>ВАЖНО</span></div><div class="notice">HORROR GAME — локальная игровая симуляция. Баланс, выигрыши и результаты не имеют денежной стоимости. Здесь нет пополнений, вывода или обмена кредитов.</div><button class="soft-btn" type="button" data-page="fairplay">О принципах работы ↗</button></div></div>';
+      '<div class="two-col"><div class="surface"><div class="surface-head"><strong>Последние события</strong><span>ТВОЯ ИСТОРИЯ</span></div>' + activityMarkup(4) + '</div><div class="surface"><div class="surface-head"><strong>Играй осознанно</strong><span>ВАЖНО</span></div><div class="notice">1WIN DEMO — неофициальная локальная игровая симуляция. Баланс, выигрыши и результаты не имеют денежной стоимости. Здесь нет пополнений, вывода или обмена кредитов.</div><button class="soft-btn" type="button" data-page="fairplay">О принципах работы ↗</button></div></div>';
   }
 
   function metric(label, value, icon, sub) {
