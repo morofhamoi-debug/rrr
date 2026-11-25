@@ -264,7 +264,7 @@
   }
 
   function renderWheel() {
-    var labels = ['0×','0.2×','0.5×','0.8×','1×','1.2×','1.5×','2×','3×','5×'];
+    var labels = ['0×','0×','0.2×','0.3×','0.5×','0.7×','0.8×','1×','1.5×','3×'];
     var labelHTML = labels.map(function (v, i) {
       return '<span style="transform:rotate(' + (i * 36 + 7) + 'deg) translate(0,-78px) rotate(-' + (i * 36 + 7) + 'deg)">' + v + '</span>';
     }).join('');
@@ -524,15 +524,20 @@
     if (runtime.wheelBusy) return;
     var stake = readStake();
     if (!placeStake(stake, 'Wheel')) return;
-    var values = [0, 0.2, 0.5, 0.8, 1, 1.2, 1.5, 2, 3, 5];
+    var values = [0, 0, 0.2, 0.3, 0.5, 0.7, 0.8, 1, 1.5, 3];
     var index = randInt(values.length);
     var mult = values[index];
     var payout = round2(stake * mult);
     runtime.wheelBusy = true;
     var totalAngle = 360 * 6 + (360 - (index * 36 + 18));
-    runtime.wheelResult = { angle: totalAngle, message: 'Колесо вращается...', index: index, mult: mult };
+    runtime.wheelResult = { angle: 0, message: 'Колесо вращается...', index: index, mult: mult };
     render();
+    requestAnimationFrame(function () {
+      var wheel = document.getElementById('wheelDisc');
+      if (wheel) wheel.style.transform = 'rotate(' + totalAngle + 'deg)';
+    });
     setTimeout(function () {
+      if (runtime.wheelResult) runtime.wheelResult.angle = totalAngle;
       runtime.wheelBusy = false;
       runtime.wheelResult.message = 'Сектор ' + (index + 1) + ' · ' + mult.toFixed(2) + '× · ' + money(payout) + ' CR.';
       settleRound('wheel', stake, payout, payout > 0 ? 'РЕЗУЛЬТАТ' : 'ПУСТО', mult.toFixed(2) + '×');
