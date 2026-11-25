@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { terrainHeight } from '../terrain/terrain_manager.js';
+import { addHouseInterior } from './interior_builder.js';
 
 function makeTexture(kind) {
   const size = 512;
@@ -137,17 +138,22 @@ function addWindow(parent, x, y, z, width, height, rotationY = 0, shutterMateria
 }
 
 function addDoor(parent, frontZ) {
-  addBox(parent, 1.65, 3.45, .22, MATERIALS.trim, 0, 1.86, frontZ, false);
-  addBox(parent, 1.38, 3.16, .12, MATERIALS.door, 0, 1.84, frontZ + .14, false);
-  for (const y of [.95, 2.05]) {
-    addBox(parent, .46, .72, .035, MATERIALS.warmTrim, 0, y, frontZ + .22);
+  // Clear 1.8 m doorway; the door is hinged and left partly open.
+  addBox(parent, .16, 3.35, .22, MATERIALS.trim, -.94, 2.28, frontZ, false);
+  addBox(parent, .16, 3.35, .22, MATERIALS.trim, .94, 2.28, frontZ, false);
+  addBox(parent, 2.04, .2, .24, MATERIALS.trim, 0, 3.95, frontZ, false);
+  const hinge = new THREE.Group();
+  hinge.position.set(-.84, .64, frontZ - .08);
+  hinge.rotation.y = 1.12;
+  addBox(hinge, 1.66, 3.12, .12, MATERIALS.door, .83, 1.56, 0, true);
+  for (const y of [.82, 1.95, 2.72]) {
+    addBox(hinge, .58, .055, .035, MATERIALS.warmTrim, .83, y, .075);
   }
-  addBox(parent, .045, .15, .055, MATERIALS.metal, .49, 1.7, frontZ + .24);
-  const knob = new THREE.Mesh(new THREE.SphereGeometry(.09, 12, 8), MATERIALS.warmTrim);
-  knob.position.set(.52, 1.7, frontZ + .28);
-  parent.add(knob);
-  addBox(parent, 2.2, .2, .42, MATERIALS.trim, 0, .08, frontZ + .1);
-  addBox(parent, 2.1, .2, .3, MATERIALS.warmTrim, 0, 3.7, frontZ + .1);
+  addBox(hinge, .06, .16, .06, MATERIALS.metal, 1.38, 1.52, .1);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(.075, 12, 8), MATERIALS.warmTrim);
+  knob.position.set(1.38, 1.52, .15);
+  hinge.add(knob);
+  parent.add(hinge);
 }
 
 function addGable(parent, width, rise, wallHeight, z, material, reverse = false) {
@@ -332,9 +338,20 @@ function buildHouse(scene, config) {
   const baseY = terrainHeight(x, z);
   group.position.set(x, baseY, z);
   group.rotation.y = rotation;
+  group.userData.houseBounds = { width, depth, baseY, porchDepth: porchLarge ? 4.2 : 3.6 };
 
   addBox(group, width + .8, .62, depth + .8, MATERIALS.concrete, 0, .32, 0, true);
-  addBox(group, width, wallHeight, depth, wall, 0, wallHeight / 2 + .62, 0, true);
+  const wallCenterY = wallHeight / 2 + .62;
+  const frontZ = depth / 2 - .12;
+  const doorGap = 1.9;
+  const sideWidth = (width - doorGap) / 2;
+  addBox(group, sideWidth, wallHeight, .24, wall, -(doorGap / 2 + sideWidth / 2), wallCenterY, frontZ, true);
+  addBox(group, sideWidth, wallHeight, .24, wall, doorGap / 2 + sideWidth / 2, wallCenterY, frontZ, true);
+  addBox(group, doorGap, wallHeight - 3.35, .24, wall, 0, .62 + 3.35 + (wallHeight - 3.35) / 2, frontZ, true);
+  addBox(group, width, wallHeight, .24, wall, 0, wallCenterY, -depth / 2 + .12, true);
+  addBox(group, .24, wallHeight, depth, wall, -width / 2 + .12, wallCenterY, 0, true);
+  addBox(group, .24, wallHeight, depth, wall, width / 2 - .12, wallCenterY, 0, true);
+  addHouseInterior(group, width, depth, wallHeight, twoStorey);
   addGable(group, width + .2, roofRise, wallHeight + .62, depth / 2, wall);
   addGable(group, width + .2, roofRise, wallHeight + .62, -depth / 2 - .22, wall, true);
   addRoof(group, width, depth, wallHeight + .62, roofRise, roof, roof === MATERIALS.metalRoof);
@@ -381,6 +398,37 @@ export class HouseManager {
         wall: MATERIALS.siding, roof: MATERIALS.metalRoof, twoStorey: true, porchLarge: true, rotation: .045
       })
     );
+  }
+
+  groundHeightAt(x, z) {
+    for (const house of this.houses) {
+      const p = house.worldToLocal(new THREE.Vector3(x, house.position.y, z));
+      const b = house.userData.houseBounds;
+      if (Math.abs(p.x) < b.width / 2 - .2 && Math.abs(p.z) < b.depth / 2 - .2) return b.baseY + .667;
+      if (Math.abs(p.x) < 4.8 && p.z >= b.depth / 2 - .1 && p.z <= b.depth / 2 + b.porchDepth + .1) return b.baseY + .86;
+    }
+    return terrainHeight(x, z);
+  }
+
+  resolvePosition(previous, candidate, radius = .32) {
+    const result = candidate.clone();
+    for (const house of this.houses) {
+      const old = house.worldToLocal(previous.clone());
+      const next = house.worldToLocal(result.clone());
+      const b = house.userData.houseBounds;
+      const hx = b.width / 2, hz = b.depth / 2;
+      const oldInside = Math.abs(old.x) < hx - .05 && Math.abs(old.z) < hz - .05;
+      const nextInside = Math.abs(next.x) < hx - .05 && Math.abs(next.z) < hz - .05;
+      const crossedFront = old.z > hz - .25 && next.z <= hz + .25 && Math.abs(next.x) < .9;
+      const crossedBackOut = old.z < -hz + .25 && next.z >= -hz - .25 && Math.abs(next.x) < .9;
+      const doorEntry = !oldInside && nextInside && crossedFront;
+      const doorExit = oldInside && !nextInside && (crossedFront || crossedBackOut);
+      if (oldInside && nextInside) continue;
+      if (doorEntry || doorExit) continue;
+      const nearFootprint = Math.abs(next.x) < hx + radius && Math.abs(next.z) < hz + radius;
+      if (nearFootprint && (nextInside || oldInside)) return previous.clone();
+    }
+    return result;
   }
 
   update(cameraPosition) {
