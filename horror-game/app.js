@@ -245,7 +245,7 @@
     var r = runtime.crash;
     var active = r && r.active;
     var mult = active ? r.current : (r && r.last ? r.last : 1);
-    var content = '<div class="game-stage"><span class="stage-caption">LIVE MULTIPLIER</span><div class="multiplier" id="crashMultiplier">' + mult.toFixed(2) + '<small>×</small></div><div class="crash-graph"><svg viewBox="0 0 500 190" preserveAspectRatio="none"><path id="crashPath" class="crash-line" d="M0 185 L60 170 L120 158 L180 135 L240 117 L300 85 L360 55 L420 20 L500 0"/></svg></div><div class="crash-status" id="crashStatus">' + (active ? 'РАУНД ИДЁТ · МОЖНО ЗАБРАТЬ' : 'НАЖМИ «СТАРТ», ЧТОБЫ НАЧАТЬ') + '</div><div class="game-message" id="crashMessage">' + esc(r && r.message ? r.message : 'Множитель растёт, но раунд может завершиться в любой момент.') + '</div><span class="stage-foot">УСПЕЙ ЗАФИКСИРОВАТЬ ВИРТУАЛЬНЫЙ РЕЗУЛЬТАТ</span></div><div class="spacer"></div>';
+    var content = '<div class="game-stage"><span class="stage-caption">LIVE MULTIPLIER</span><div class="multiplier" id="crashMultiplier">' + mult.toFixed(2) + '<small>×</small></div><div class="crash-graph"><svg viewBox="0 0 500 190" preserveAspectRatio="none"><path id="crashPath" class="crash-line" d="M0 185 L60 170 L120 158 L180 135 L240 117 L300 85 L360 55 L420 20 L500 0"/><circle id="crashDot" class="crash-dot" cx="60" cy="170" r="5"/></svg></div><div class="crash-status" id="crashStatus">' + (active ? 'РАУНД ИДЁТ · МОЖНО ЗАБРАТЬ' : 'НАЖМИ «СТАРТ», ЧТОБЫ НАЧАТЬ') + '</div><div class="game-message" id="crashMessage">' + esc(r && r.message ? r.message : 'Множитель растёт, но раунд может завершиться в любой момент.') + '</div><span class="stage-foot">УСПЕЙ ЗАФИКСИРОВАТЬ ВИРТУАЛЬНЫЙ РЕЗУЛЬТАТ</span></div><div class="spacer"></div>';
     var aside = '<div class="control-box"><h3>УПРАВЛЕНИЕ</h3>' + stakeControl(50) +
       '<button class="primary-btn full-btn" type="button" data-action="start-crash"' + (active ? ' disabled' : '') + '>ЗАПУСТИТЬ РАУНД</button>' +
       '<button class="soft-btn full-btn" type="button" data-action="cashout-crash"' + (!active ? ' disabled' : '') + '>ЗАБРАТЬ ВЫИГРЫШ</button><div class="field-help">Множитель увеличивается со временем. Если он достигнет скрытой точки остановки раньше фиксации — ставка раунда будет потеряна.</div></div>' +
@@ -480,6 +480,7 @@
       var multNode = document.getElementById('crashMultiplier');
       var statusNode = document.getElementById('crashStatus');
       var pathNode = document.getElementById('crashPath');
+      var dotNode = document.getElementById('crashDot');
       if (multNode) multNode.innerHTML = r.current.toFixed(2) + '<small>×</small>';
       if (statusNode) statusNode.textContent = 'РАУНД ИДЁТ · ЗАБРАТЬ МОЖНО СЕЙЧАС';
       if (pathNode) {
@@ -487,6 +488,7 @@
         var y = 184 - pct * 168;
         var xPos = Math.min(500, 60 + pct * 420);
         pathNode.setAttribute('d', 'M0 185 Q' + Math.max(40, xPos * .45) + ' ' + (185 - pct * 28) + ' ' + xPos + ' ' + y);
+        if (dotNode) { dotNode.setAttribute('cx', xPos); dotNode.setAttribute('cy', y); }
       }
       if (r.current >= r.crashAt) finishCrashLoss();
     }, 45);
@@ -785,7 +787,7 @@
       var odds = document.getElementById('diceOdds');
       if (odds && direction) {
         var probability = direction.value === 'under' ? Number(event.target.value) : 100 - Number(event.target.value);
-        odds.textContent = 'Вероятность: ' + probability + '% · теоретический множитель: ' + (0.98 / (probability / 100)).toFixed(2) + '×.';
+        odds.textContent = 'Вероятность: ' + probability + '% · теоретический множитель: ' + (0.97 / (probability / 100)).toFixed(2) + '×.';
       }
     }
   });
@@ -798,7 +800,7 @@
     if (event.target && event.target.id === 'diceDirection') {
       var target = Number(document.getElementById('diceTarget').value);
       var probability = event.target.value === 'under' ? target : 100 - target;
-      document.getElementById('diceOdds').textContent = 'Вероятность: ' + probability + '% · теоретический множитель: ' + (0.98 / (probability / 100)).toFixed(2) + '×.';
+      document.getElementById('diceOdds').textContent = 'Вероятность: ' + probability + '% · теоретический множитель: ' + (0.97 / (probability / 100)).toFixed(2) + '×.';
     }
   });
 
