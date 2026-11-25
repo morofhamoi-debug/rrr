@@ -419,10 +419,9 @@ export class HouseManager {
       const hx = b.width / 2, hz = b.depth / 2;
       const oldInside = Math.abs(old.x) < hx - .05 && Math.abs(old.z) < hz - .05;
       const nextInside = Math.abs(next.x) < hx - .05 && Math.abs(next.z) < hz - .05;
-      const crossedFront = old.z > hz - .25 && next.z <= hz + .25 && Math.abs(next.x) < .9;
-      const crossedBackOut = old.z < -hz + .25 && next.z >= -hz - .25 && Math.abs(next.x) < .9;
+      const crossedFront = ((old.z >= hz && next.z <= hz) || (old.z <= hz && next.z >= hz)) && Math.abs(next.x) < .9;
       const doorEntry = !oldInside && nextInside && crossedFront;
-      const doorExit = oldInside && !nextInside && (crossedFront || crossedBackOut);
+      const doorExit = oldInside && !nextInside && crossedFront;
       if (oldInside && nextInside) continue;
       if (doorEntry || doorExit) continue;
       const nearFootprint = Math.abs(next.x) < hx + radius && Math.abs(next.z) < hz + radius;
