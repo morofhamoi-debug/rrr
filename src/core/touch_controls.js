@@ -6,7 +6,7 @@ export class TouchControls{
   document.documentElement.classList.toggle('touch-device',this.coarse);
   if(!this.stick||!this.coarse)return;
   this.bindJoystick();this.bindLook();
-  this.bindHoldButton('#touch-up',1);this.bindHoldButton('#touch-down',-1);this.bindSprint();
+  this.bindSprint();
   this.bindTurnButton('#touch-turn-left',-1);this.bindTurnButton('#touch-turn-right',1);
  }
  bindJoystick(){
