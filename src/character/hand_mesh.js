@@ -1,7 +1,44 @@
 import * as THREE from 'three';
 
-const SKIN = new THREE.MeshStandardMaterial({ color: 0xc58e70, roughness: .78, metalness: 0, skinning: false });
-const SKIN_LIGHT = new THREE.MeshStandardMaterial({ color: 0xd5a184, roughness: .72 });
+function makeSkinMaps() {
+  const size = 512;
+  const colorCanvas = document.createElement('canvas');
+  colorCanvas.width = colorCanvas.height = size;
+  const ctx = colorCanvas.getContext('2d');
+  ctx.fillStyle = '#c58e70';
+  ctx.fillRect(0, 0, size, size);
+  let seed = 731;
+  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  for (let i = 0; i < 22000; i++) {
+    const x = random() * size, y = random() * size, r = .25 + random() * 1.1;
+    ctx.fillStyle = random() > .48 ? 'rgba(255,218,188,.10)' : 'rgba(79,42,31,.075)';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  for (let i = 0; i < 95; i++) {
+    const x = random() * size, y = random() * size;
+    ctx.strokeStyle = random() > .5 ? 'rgba(255,218,190,.12)' : 'rgba(91,48,36,.10)';
+    ctx.lineWidth = .5 + random();
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + random() * 12, y + random() * 5, x + random() * 24, y + random() * 8); ctx.stroke();
+  }
+  const map = new THREE.CanvasTexture(colorCanvas);
+  map.colorSpace = THREE.SRGBColorSpace; map.wrapS = map.wrapT = THREE.RepeatWrapping;
+  map.anisotropy = 8; map.generateMipmaps = true; map.minFilter = THREE.LinearMipmapLinearFilter;
+  const bumpCanvas = document.createElement('canvas');
+  bumpCanvas.width = bumpCanvas.height = size;
+  const bctx = bumpCanvas.getContext('2d');
+  bctx.fillStyle = '#888'; bctx.fillRect(0, 0, size, size);
+  for (let i = 0; i < 26000; i++) {
+    const x = random() * size, y = random() * size, v = Math.floor(95 + random() * 70);
+    bctx.fillStyle = `rgb(${v},${v},${v})`;
+    bctx.fillRect(x, y, .7 + random() * 1.3, .7 + random() * 1.3);
+  }
+  const bump = new THREE.CanvasTexture(bumpCanvas);
+  bump.wrapS = bump.wrapT = THREE.RepeatWrapping; bump.anisotropy = 8;
+  return { map, bump };
+}
+const skinMaps = makeSkinMaps();
+const SKIN = new THREE.MeshStandardMaterial({ color: 0xffffff, map: skinMaps.map, bumpMap: skinMaps.bump, bumpScale: .006, roughness: .76, metalness: 0 });
+const SKIN_LIGHT = new THREE.MeshStandardMaterial({ color: 0xffffff, map: skinMaps.map, bumpMap: skinMaps.bump, bumpScale: .004, roughness: .72 });
 const SKIN_SHADOW = new THREE.MeshStandardMaterial({ color: 0x98664f, roughness: .86 });
 const NAIL = new THREE.MeshStandardMaterial({ color: 0xd9b8a7, roughness: .5 });
 const CUFF = new THREE.MeshStandardMaterial({ color: 0x303b31, roughness: .9 });
