@@ -184,7 +184,7 @@
     var cards = games.map(function (g) {
       return '<button class="game-card" type="button" data-game="' + g[0] + '"><div class="game-art"><span class="art-glyph">' + g[3] + '</span></div><div class="game-info"><span><strong>' + g[1] + '</strong><small>' + g[2] + '</small></span><span class="game-arrow">↗</span></div></button>';
     }).join('');
-    return '<div class="hero"><div class="hero-copy"><div class="hero-kicker">✦ WELCOME TO THE NIGHT</div><h1>ИГРА НАЧИНАЕТСЯ <span>ЗДЕСЬ.</span></h1><p>Семь мини-игр, единый профиль и виртуальный баланс в ₽. Выбирай игру, проверяй механику и играй без реальных денежных ставок.</p><div class="hero-actions"><button class="primary-btn" type="button" data-game="mines">ОТКРЫТЬ MINES ↗</button><span class="hero-note">10 000 ₽ НА СТАРТЕ</span></div></div><div class="hero-emblem">H</div></div>' +
+    return '<div class="hero"><div class="hero-copy"><div class="hero-kicker">✦ WELCOME TO THE NIGHT</div><h1>ИГРА НАЧИНАЕТСЯ <span>ЗДЕСЬ.</span></h1><p>Семь мини-игр, единый профиль и виртуальный баланс в ₽. Выбирай игру, проверяй механику и играй без реальных денежных ставок.</p><div class="hero-actions"><button class="primary-btn" type="button" data-game="mines">ОТКРЫТЬ MINES ↗</button><span class="hero-note">10 000 ₽ НА СТАРТЕ</span></div></div><div class="hero-emblem">1</div></div>' +
       '<div class="metrics">' +
       metric('Виртуальный баланс', money(state.balance) + ' <small>₽</small>', '✦', 'Без денежных операций') +
       metric('Сыграно раундов', money(state.rounds), '◷', 'Локальная статистика') +
@@ -260,7 +260,7 @@
     var result = r ? '<div class="game-message ' + (r.win ? 'good' : 'bad') + '">' + esc(r.message) + '</div>' : '<div class="game-message">Настрой диапазон и проверь прогноз.</div>';
     var content = '<div class="game-stage"><span class="stage-caption">DICE ROLL · 0—99</span><div class="dice-result">' + (r ? String(r.roll).padStart(2, '0') : '— —') + '</div><div class="result-track"><span class="result-zone" style="width:' + (r ? r.target : 50) + '%"></span><span class="result-marker" style="left:' + (r ? r.roll : 50) + '%"></span></div><span class="stage-foot">СЛУЧАЙНОЕ ЧИСЛО ОТ 0 ДО 99</span>' + result + '</div>';
     var aside = '<div class="control-box"><h3>ПАРАМЕТРЫ DICE</h3>' + stakeControl(50) +
-      '<div class="field-label"><span>ЦЕЛЕВОЕ ЧИСЛО</span><strong id="diceTargetValue">50</strong></div><input id="diceTarget" type="range" min="5" max="95" value="50" style="width:100%;accent-color:#ef334b">' +
+      '<div class="field-label"><span>ЦЕЛЕВОЕ ЧИСЛО</span><strong id="diceTargetValue">50</strong></div><input id="diceTarget" type="range" min="5" max="95" value="50" style="width:100%;accent-color:#367cff">' +
       '<div class="field-label"><span>УСЛОВИЕ ВЫИГРЫША</span></div><select class="field-select" id="diceDirection"><option value="under">Меньше цели</option><option value="over">Больше или равно цели</option></select>' +
       '<button class="primary-btn full-btn" type="button" data-action="roll-dice">БРОСИТЬ DICE</button><div class="field-help" id="diceOdds">Вероятность: 50% · теоретический множитель: 1,96×.</div></div>' +
       '<div class="control-box"><h3>ПРАВИЛА</h3><div class="field-help">Генерируется число от 0 до 99. При выполнении условия начисляется виртуальный результат с коэффициентом 0,98 / вероятность.</div></div>';
@@ -397,6 +397,8 @@
     updateNav();
     document.body.classList.toggle('reduce-motion', !!state.reducedMotion);
     document.body.setAttribute('data-theme', state.theme === 'light' ? 'light' : 'dark');
+    var themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) themeMeta.setAttribute('content', state.theme === 'light' ? '#f2f5fa' : '#090e18');
   }
 
   function readStake() {
