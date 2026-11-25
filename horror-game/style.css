@@ -268,3 +268,24 @@ body[data-theme="light"] .side-note{background:#f6f9ff;border-color:#dce7f5;colo
  .coin-scene{height:220px}.coin-disc{width:132px;height:132px}.case-opening-visual{width:135px;height:115px}
  .wheel-wrap{width:min(84vw,340px);height:min(84vw,340px)}
 }
+/* Individual game controls and boards use the same bright blue/white language */
+body[data-theme="light"] .mine-cell{background:linear-gradient(145deg,#f2f7ff,#e6effc);border-color:#c8d9ef;color:#4c76aa;box-shadow:0 3px 0 #d5e2f2}
+body[data-theme="light"] .mine-cell:not(:disabled):hover{background:#dceaff;border-color:#78a8e8}
+body[data-theme="light"] .mine-cell.safe{background:linear-gradient(145deg,#e2f8ee,#cff0df);border-color:#77c5a1;color:#14784f}
+body[data-theme="light"] .mine-cell.mine{background:linear-gradient(145deg,#e4efff,#c9defc);border-color:#73a7e9;color:#194f91}
+body[data-theme="light"] .crash-graph{border-color:#d7e3f2;background:repeating-linear-gradient(0deg,transparent 0 37px,#dfe8f3 38px),repeating-linear-gradient(90deg,transparent 0 49px,#e4ebf5 50px)}
+.crash-line{stroke:#367cff;stroke-width:3.5}
+.crash-dot{fill:#1d62c2;stroke:#fff;stroke-width:2;filter:drop-shadow(0 0 5px #367cffaa)}
+body[data-theme="light"] .crash-status{color:#547194}
+body[data-theme="light"] .case-card small{color:#70829a}
+body[data-theme="light"] .case-card button{background:#eaf2ff;border:1px solid #cadcf5;color:#225b9f}
+body[data-theme="light"] .flip-choice:disabled{opacity:.55}
+body[data-theme="light"] .game-message.good{color:#16845a}
+body[data-theme="light"] .game-message.bad{color:#245c9c}
+@media(max-width:760px){
+ .plinko-stage .plinko-board{min-height:350px}
+ .plinko-stage .plinko-slots span{letter-spacing:-.35px}
+ .dice-outcome span{font-size:7px;padding:8px 4px}
+ .dice-outcome strong{font-size:11px}
+ .coin-result-title{font-size:19px}
+}
