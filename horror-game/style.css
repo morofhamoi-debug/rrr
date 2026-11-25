@@ -289,3 +289,6 @@ body[data-theme="light"] .game-message.bad{color:#245c9c}
  .dice-outcome strong{font-size:11px}
  .coin-result-title{font-size:19px}
 }
+
+.coin-disc{transform:rotateY(0deg)}
+.result-marker{transform:translateX(-50%)}
