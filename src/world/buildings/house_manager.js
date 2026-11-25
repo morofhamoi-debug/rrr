@@ -144,7 +144,7 @@ function addDoor(parent, frontZ) {
   addBox(parent, 2.04, .2, .24, MATERIALS.trim, 0, 3.95, frontZ, false);
   const hinge = new THREE.Group();
   hinge.position.set(-.84, .64, frontZ - .08);
-  hinge.rotation.y = 1.12;
+  hinge.rotation.y = Math.PI / 2;
   addBox(hinge, 1.66, 3.12, .12, MATERIALS.door, .83, 1.56, 0, true);
   for (const y of [.82, 1.95, 2.72]) {
     addBox(hinge, .58, .055, .035, MATERIALS.warmTrim, .83, y, .075);
@@ -419,7 +419,7 @@ export class HouseManager {
       const hx = b.width / 2, hz = b.depth / 2;
       const oldInside = Math.abs(old.x) < hx - .05 && Math.abs(old.z) < hz - .05;
       const nextInside = Math.abs(next.x) < hx - .05 && Math.abs(next.z) < hz - .05;
-      const crossedFront = ((old.z >= hz && next.z <= hz) || (old.z <= hz && next.z >= hz)) && Math.abs(next.x) < .9;
+      const crossedFront = ((old.z >= hz && next.z <= hz) || (old.z <= hz && next.z >= hz)) && Math.abs(next.x) < .56;
       const doorEntry = !oldInside && nextInside && crossedFront;
       const doorExit = oldInside && !nextInside && crossedFront;
       if (oldInside && nextInside) continue;
