@@ -301,7 +301,7 @@
   }
 
     function renderWheel() {
-    var labels = ['0×','0×','0.2×','0.3×','0.5×','0.7×','0.8×','1×','1.5×','3×'];
+    var labels = ['0×','0×','0.3×','0.4×','0.7×','0.8×','1×','1.2×','1.8×','3.5×'];
     var labelHTML = labels.map(function (v, i) { var a = i * 36 + 18; return '<span style="transform:rotate(' + a + 'deg) translateY(-104px) rotate(-' + a + 'deg)">' + v + '</span>'; }).join('');
     var result = runtime.wheelResult, angle = result ? result.angle : 0;
     var stage = '<div class="game-stage wheel-stage"><span class="stage-caption">LUCKY WHEEL · 10 СЕКТОРОВ</span><div class="wheel-wrap"><span class="wheel-pointer"></span><div class="wheel-disc" id="wheelDisc" style="transform:rotate(' + angle + 'deg)"><div class="wheel-labels">' + labelHTML + '</div></div></div><div class="game-message" id="wheelResult">' + (runtime.wheelBusy ? 'Колесо набирает скорость…' : (result ? esc(result.message) : 'Колесо делает десять полных оборотов и плавно останавливается.')) + '</div><span class="stage-foot">ПЛАВНОЕ ВРАЩЕНИЕ · ВИРТУАЛЬНЫЙ РЕЗУЛЬТАТ</span></div>';
@@ -608,7 +608,7 @@
     if (runtime.wheelBusy) return;
     var stake = readStake();
     if (!placeStake(stake, 'Wheel')) return;
-    var values = [0, 0, 0.2, 0.3, 0.5, 0.7, 0.8, 1, 1.5, 3];
+    var values = [0, 0, 0.3, 0.4, 0.7, 0.8, 1, 1.2, 1.8, 3.5];
     var index = randInt(values.length);
     var mult = values[index];
     var payout = round2(stake * mult);
@@ -643,8 +643,8 @@
     var cost = cases[id];
     if (!cost || !placeStake(cost, 'Cases · ' + id)) return;
     var drops = [
-      { m: 0, w: 8 }, { m: 0.3, w: 18 }, { m: 0.5, w: 24 }, { m: 0.8, w: 22 },
-      { m: 1, w: 14 }, { m: 1.5, w: 7 }, { m: 2, w: 4 }, { m: 3, w: 2 }, { m: 5, w: 1 }
+      { m: 0, w: 5 }, { m: 0.3, w: 10 }, { m: 0.5, w: 15 }, { m: 0.8, w: 18 },
+      { m: 1, w: 30 }, { m: 1.5, w: 12 }, { m: 2, w: 6 }, { m: 3, w: 3 }, { m: 5, w: 1 }
     ];
     var pick = rand() * 100, sum = 0, mult = 0;
     for (var i = 0; i < drops.length; i++) { sum += drops[i].w; if (pick < sum) { mult = drops[i].m; break; } }
