@@ -183,3 +183,88 @@ body[data-theme="light"] .sidebar-promo{background:#f0f6ff;border-color:#cfdef2;
 
 .menu-backdrop{display:block;width:100%;height:100%;padding:0;border:0;border-radius:0;cursor:default}
 body.menu-open{overflow:hidden}
+
+/* Fixed white canvas and expanded game animations */
+html,body,body[data-theme="light"]{background:#fff!important;color:#172b46}
+body[data-theme="light"] .ambient{display:none!important}
+body[data-theme="light"] .topbar,body[data-theme="light"] .sidebar,body[data-theme="light"] .main-content{background:#fff!important}
+body[data-theme="light"] .topbar,body[data-theme="light"] .sidebar,body[data-theme="light"] .site-footer{border-color:#e5edf7}
+body[data-theme="light"] .metric,body[data-theme="light"] .surface,body[data-theme="light"] .game-panel,body[data-theme="light"] .control-box{background:#fff!important;border-color:#e1e8f2;box-shadow:0 8px 28px #1e3a5f0a}
+body[data-theme="light"] .hero{background:linear-gradient(125deg,#f0f6ff,#fff 72%)!important;border-color:#dce8f8}
+body[data-theme="light"] .hero h1,body[data-theme="light"] .hero-copy,body[data-theme="light"] .page-head h1,body[data-theme="light"] .game-title h2,body[data-theme="light"] .surface-head strong{color:#172b46}
+body[data-theme="light"] .hero p,body[data-theme="light"] .page-head p,body[data-theme="light"] .metric-sub,body[data-theme="light"] .field-help,body[data-theme="light"] .game-title p{color:#65758d}
+body[data-theme="light"] .game-card{background:#fff;border-color:#e1e8f2;color:#172b46}
+body[data-theme="light"] .game-art{background:linear-gradient(145deg,#f2f7ff,#eaf2ff)!important}
+body[data-theme="light"] .game-stage{background:#f7faff!important;border-color:#e0e9f6;color:#172b46}
+body[data-theme="light"] .stage-caption,body[data-theme="light"] .stage-foot{color:#74849b}
+body[data-theme="light"] .field-input,body[data-theme="light"] .field-select,body[data-theme="light"] .field-textarea{background:#fff;border-color:#d7e2f0;color:#172b46}
+body[data-theme="light"] .game-stat,body[data-theme="light"] .activity-icon,body[data-theme="light"] .list-icon{background:#edf4ff;color:#2866bd}
+body[data-theme="light"] .game-stat small,body[data-theme="light"] .activity-row small,body[data-theme="light"] .list-card small{color:#74849b}
+body[data-theme="light"] .game-stat strong,body[data-theme="light"] .activity-row strong,body[data-theme="light"] .list-card strong{color:#1c3557}
+body[data-theme="light"] .notice{background:#f1f6ff;border-color:#d7e5f7;color:#405a7b}
+body[data-theme="light"] .profile-hero,body[data-theme="light"] .bonus-card{background:#f4f8ff;border-color:#dce8f7;color:#172b46}
+body[data-theme="light"] .mobile-dock{background:#ffffffef;border-color:#dce5f1}
+body[data-theme="light"] .dock-btn{color:#71839e}
+body[data-theme="light"] .dock-btn.active,body[data-theme="light"] .dock-menu-trigger{color:#2366c7}
+body[data-theme="light"] .game-menu-sheet{background:#fff;border-color:#dce5f1}
+body[data-theme="light"] .menu-game{background:#f7faff;border-color:#e0e9f5;color:#172b46}
+body[data-theme="light"] .menu-game-copy small,body[data-theme="light"] .menu-virtual-note{color:#65758d}
+body[data-theme="light"] .menu-links button{background:#f6f9ff;border-color:#dce5f1;color:#35506f}
+body[data-theme="light"] .menu-close{background:#f4f8ff;border-color:#d7e2f0;color:#263a55}
+body[data-theme="light"] .multiplier{color:#173b6e;text-shadow:0 2px 15px #367cff22}
+body[data-theme="light"] .dice-cube{color:#173b6e;background:linear-gradient(145deg,#fff,#eaf2ff);border-color:#c9dcf6}
+body[data-theme="light"] .result-track{background:#dfe8f5}
+body[data-theme="light"] .result-marker{background:#174f9c}
+body[data-theme="light"] .plinko-slots span{background:#eaf2ff;color:#25558e}
+body[data-theme="light"] .plinko-slots span.is-hit{background:#cfe2ff;color:#124b96}
+body[data-theme="light"] .coin-face{background:linear-gradient(145deg,#fff7d6,#efc96d);border-color:#d4a63b;color:#835b12}
+body[data-theme="light"] .case-card{background:#fff;border-color:#dbe6f4}
+body[data-theme="light"] .flip-choice{background:#fff;border-color:#cddcf0;color:#2d5f9e}
+body[data-theme="light"] .side-note{background:#f6f9ff;border-color:#dce7f5;color:#667b98}
+.plinko-stage{overflow:visible;min-height:490px}
+.plinko-board{width:min(100%,560px);padding:30px 0 42px;min-height:365px}
+.plinko-board .peg-row{height:23px;gap:clamp(7px,1.45vw,16px)}
+.plinko-board .peg{width:7px;height:7px;flex:0 0 7px;background:#7c99bd;box-shadow:0 0 0 3px #dfeafa}
+.plinko-ball{width:15px;height:15px;top:7px;z-index:4;display:none;background:radial-gradient(circle at 32% 28%,#fff,#57a0ff 48%,#1553a2);border:1px solid #14539f;box-shadow:0 4px 12px #347ce866;transform:translateX(-50%)}
+.plinko-ball.drop{display:block;animation:plinkoFallback 4.7s ease-in-out forwards}
+@keyframes plinkoFallback{0%{top:7px;left:50%}25%{top:95px;left:39%}50%{top:180px;left:58%}75%{top:250px;left:45%}100%{top:300px;left:50%}}
+.plinko-slots{gap:4px;margin-top:9px;position:relative;z-index:2}
+.plinko-slots span{min-width:0;padding:9px 1px;font-size:clamp(7px,1.5vw,10px);font-weight:800;border-radius:7px;transition:background .2s,transform .2s}
+.plinko-slots span.is-hit{transform:translateY(-5px);background:#c9e0ff;color:#124b96;box-shadow:0 5px 16px #3b82f633}
+.plinko-last-result{font-size:10px;color:#6c7f99;margin-top:13px;padding-top:12px;border-top:1px solid #e5edf7}
+.dice-stage{gap:10px}.dice-visual{width:100%;display:grid;place-items:center;position:relative;min-height:210px;perspective:900px}
+.dice-glow{position:absolute;width:220px;height:140px;border-radius:50%;background:#76aefb22;filter:blur(24px)}
+.dice-cube{position:relative;width:136px;height:136px;border:1px solid #c8d9f1;border-radius:28px;display:grid;place-items:center;background:linear-gradient(145deg,#fff,#eaf2ff);color:#173b6e;font:900 45px "DM Mono",monospace;box-shadow:0 18px 42px #2d6cba24;transition:transform .12s}
+.dice-cube.is-rolling{animation:diceTumble .34s linear infinite}
+.dice-range-head{width:min(100%,520px);display:flex;justify-content:space-between;color:#8192aa;font:10px "DM Mono",monospace}
+.dice-range-head strong{color:#326db8;letter-spacing:1.5px}
+.dice-outcome{width:min(100%,540px);display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:5px}
+.dice-outcome span{padding:10px 7px;border:1px solid #e0e9f5;border-radius:9px;background:#fff;text-align:center;color:#71829b;font-size:8px}
+.dice-outcome strong{display:block;margin-top:5px;color:#1e4f8d;font:800 12px "DM Mono",monospace}
+@keyframes diceTumble{0%{transform:rotate(-8deg) translateY(0) scale(.96)}25%{transform:rotate(7deg) translateY(-7px) scale(1.02)}50%{transform:rotate(12deg) translateY(1px) scale(.98)}75%{transform:rotate(-11deg) translateY(-5px) scale(1.01)}100%{transform:rotate(-8deg) translateY(0) scale(.96)}}
+.coin-stage{overflow:visible}.coin-scene{width:100%;height:250px;display:grid;place-items:center;position:relative;perspective:1000px}
+.coin-aura{position:absolute;width:220px;height:180px;background:#cfe2ff;border-radius:50%;filter:blur(30px);opacity:.7}
+.coin-disc{position:relative;width:150px;height:150px;transform-style:preserve-3d;transition:transform 3.05s cubic-bezier(.12,.72,.12,1);z-index:2}
+.coin-face{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;border:7px solid #d4a63b;background:linear-gradient(145deg,#fff7d6,#efc96d);color:#835b12;box-shadow:inset 0 0 0 5px #fff9e8,0 12px 25px #94701e22}
+.coin-face strong{font:900 54px Manrope,sans-serif}.coin-face small{font:800 10px "DM Mono",monospace;letter-spacing:1px}
+.coin-back{transform:rotateY(180deg)}.coin-shadow{position:absolute;bottom:28px;width:130px;height:20px;border-radius:50%;background:#aabbd1;filter:blur(9px);opacity:.55}
+.coin-result-title{font-size:22px;font-weight:900;color:#234f84;letter-spacing:1px}
+.flip-choices{justify-content:center}.flip-choice{min-width:110px;min-height:56px;border-radius:12px;font-size:17px;background:#f5f8ff}.flip-choice small{font-size:9px}
+.case-opening-visual{width:160px;height:135px;border:1px solid #d6e3f5;border-radius:20px;background:linear-gradient(145deg,#eef5ff,#fff);display:grid;place-items:center;margin:12px auto 20px;color:#377bc9;font-size:55px;box-shadow:0 18px 42px #347ce81c}
+.case-opening-visual.is-opening{animation:caseShake .42s ease-in-out infinite;box-shadow:0 0 0 8px #3b82f610,0 18px 42px #347ce833}
+.case-opening-visual.is-open{animation:caseReveal .5s ease-out}
+.case-status{font-size:11px;font-weight:800;color:#4b6c98;letter-spacing:1px}
+@keyframes caseShake{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-5px) rotate(-2deg)}75%{transform:translateX(5px) rotate(2deg)}}
+@keyframes caseReveal{0%{transform:scale(.88);opacity:.5}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.mine-cell.safe{animation:mineReveal .25s ease-out}.mine-cell.mine{animation:mineHit .35s ease-out}
+@keyframes mineReveal{from{transform:rotateX(75deg) scale(.88);opacity:.5}to{transform:rotateX(0) scale(1);opacity:1}}
+@keyframes mineHit{0%{transform:scale(.9)}45%{transform:scale(1.12)}100%{transform:scale(1)}}
+.wheel-disc{transition:transform 9.8s cubic-bezier(.08,.74,.13,1)!important}
+.wheel-wrap{width:clamp(280px,34vw,370px);height:clamp(280px,34vw,370px)}
+@media(max-width:760px){
+ .plinko-stage{min-height:455px;padding:12px 8px 24px}.plinko-board{width:100%;padding:26px 0 35px}
+ .plinko-board .peg-row{height:21px;gap:clamp(5px,1.8vw,10px)}.plinko-board .peg{width:6px;height:6px;flex-basis:6px}
+ .plinko-slots span{font-size:7px;padding:8px 0}.dice-visual{min-height:175px}.dice-cube{width:112px;height:112px;border-radius:24px;font-size:38px}
+ .coin-scene{height:220px}.coin-disc{width:132px;height:132px}.case-opening-visual{width:135px;height:115px}
+ .wheel-wrap{width:min(84vw,340px);height:min(84vw,340px)}
+}
