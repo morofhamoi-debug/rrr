@@ -163,7 +163,7 @@
         else parsed.warnings.push("У картинки нет корректного адреса. Добавь «Адрес: https://…».");
       } else if (el.type === "button") {
         const action = el.action.trim();
-        const openMatch = action.match(/^(?:(?:открыть|перейти|перейти по ссылке)\\s+)?(https?:\\/\\/\\S+)$/i);
+        const openMatch = action.match(/^(?:(?:открыть|перейти|перейти по ссылке)\s+)?(https?:\/\/\S+)$/i);
         const url = openMatch ? safeUrl(openMatch[1].trim()) : "";
         const messageMatch = action.match(/^(?:показать|вывести)\s+(.+)$/i);
         const message = messageMatch ? unquote(messageMatch[1]) : "";
