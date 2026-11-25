@@ -55,8 +55,8 @@ export class MainMenu {
             <div class="control-card"><span class="control-symbol">W A S D</span><b>Перемещение</b><small>Свободное движение камеры по территории</small></div>
             <div class="control-card"><span class="control-symbol">MOUSE / TOUCH</span><b>Осмотр и поворот</b><small>На телефоне свайп влево поворачивает влево, свайп вправо — вправо. Кнопки ↶ / ↷ дают точный поворот.</small></div>
             <div class="control-card"><span class="control-symbol">PINCH</span><b>Зум на телефоне</b><small>Сведите или разведите два пальца в зоне обзора справа</small></div>
-            <div class="control-card"><span class="control-symbol">E / Q</span><b>Высота</b><small>Подъём и спуск камеры, на телефоне — кнопки справа</small></div>
-            <div class="control-card"><span class="control-symbol">SHIFT / »</span><b>Ускорение</b><small>Удерживайте для ускоренного движения</small></div>
+            <div class="control-card"><span class="control-symbol">1.68 M</span><b>Рост камеры</b><small>Камера закреплена на уровне глаз персонажа. Подъёма и полёта больше нет.</small></div>
+            <div class="control-card"><span class="control-symbol">SHIFT / »</span><b>Бег</b><small>Удерживайте для естественного ускоренного бега. Через открытые двери можно входить в дома.</small></div>
             <div class="control-card"><span class="control-symbol">T</span><b>Время суток</b><small>Переключение освещения на следующий час</small></div>
             <div class="control-card"><span class="control-symbol">ESC</span><b>Главное меню</b><small>Сохранить позицию и открыть меню</small></div>
           </div>
