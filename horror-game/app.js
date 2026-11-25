@@ -258,10 +258,10 @@
     }
     var slotTables = { low: [1.7, 1.3, 1, 0.8, 0.7, 0.8, 1, 1.3, 1.7], medium: [6, 2.2, 1.3, 0.65, 0.35, 0.65, 1.3, 2.2, 6], high: [15, 4, 1.5, 0.3, 0.1, 0.3, 1.5, 4, 15] };
     var activeRisk = runtime.plinkoRisk || 'low';
-    var slots = slotTables[activeRisk].map(function (v) { return v.toFixed(2).replace(/0+$/, '').replace(/\\.$/, '') + '×'; });
+    var slots = slotTables[activeRisk].map(function (v) { return String(Number(v.toFixed(2))) + '×'; });
     var stage = '<div class="game-stage"><span class="stage-caption">PLINKO BOARD · 8 ROWS</span><div class="plinko-board"><span class="plinko-ball" id="plinkoBall"></span>' + rows + '<div class="plinko-slots">' + slots.map(function (x) { return '<span>' + x + '</span>'; }).join('') + '</div></div><div class="game-message" id="plinkoResult">' + (result ? esc(result.message) : 'Запусти шар и смотри, в какой слот он попадёт.') + '</div><span class="stage-foot">УПРОЩЁННАЯ ДЕМО-ФИЗИКА · СЛУЧАЙНЫЙ ПУТЬ</span></div>';
     var aside = '<div class="control-box"><h3>ПАРАМЕТРЫ PLINKO</h3>' + stakeControl(50) +
-      '<div class="field-label"><span>УРОВЕНЬ РИСКА</span></div><select class="field-select" id="plinkoRisk"><option value="low">Low · спокойный</option><option value="medium">Medium · средний</option><option value="high">High · высокий</option></select>' +
+      '<div class="field-label"><span>УРОВЕНЬ РИСКА</span></div><select class="field-select" id="plinkoRisk"><option value="low"' + (activeRisk === 'low' ? ' selected' : '') + '>Low · спокойный</option><option value="medium"' + (activeRisk === 'medium' ? ' selected' : '') + '>Medium · средний</option><option value="high"' + (activeRisk === 'high' ? ' selected' : '') + '>High · высокий</option></select>' +
       '<button class="primary-btn full-btn" type="button" data-action="drop-plinko"' + (runtime.plinkoBusy ? ' disabled' : '') + '>БРОСИТЬ ШАР</button><div class="field-help">Результат выбирается генератором случайных чисел; движение шара — визуальная анимация, не физический расчёт.</div></div>';
     return commonHead('Plinko', 'Направь шар по доске с виртуальными множителями.', GAME_ICONS.plinko) + stage + '<div class="spacer"></div>' + commonAside(aside);
   }
@@ -684,6 +684,11 @@
     }
   });
   document.addEventListener('change', function (event) {
+    if (event.target && event.target.id === 'plinkoRisk') {
+      runtime.plinkoRisk = event.target.value;
+      var slotValues = { low: [1.7, 1.3, 1, 0.8, 0.7, 0.8, 1, 1.3, 1.7], medium: [6, 2.2, 1.3, 0.65, 0.35, 0.65, 1.3, 2.2, 6], high: [15, 4, 1.5, 0.3, 0.1, 0.3, 1.5, 4, 15] }[runtime.plinkoRisk];
+      document.querySelectorAll('.plinko-slots span').forEach(function (node, i) { if (slotValues) node.textContent = String(Number(slotValues[i].toFixed(2))) + '×'; });
+    }
     if (event.target && event.target.id === 'diceDirection') {
       var target = Number(document.getElementById('diceTarget').value);
       var probability = event.target.value === 'under' ? target : 100 - target;
