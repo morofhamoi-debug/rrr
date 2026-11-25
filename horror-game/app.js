@@ -592,6 +592,7 @@
       ball.animate(frames, { duration: 4700, easing: 'cubic-bezier(.18,.68,.22,1)', fill: 'forwards' });
     } else if (ball) {
       ball.style.display = 'block';
+      ball.style.setProperty('--final-left', ((slot + 0.5) / 13 * 100) + '%');
       ball.classList.add('drop');
     }
     setTimeout(function () {
