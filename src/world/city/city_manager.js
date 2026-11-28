@@ -236,7 +236,7 @@ export class CityManager {
       const roadDistance = this.roads.distanceToRoad(lot.x, lot.z);
       const nearHouse = this.houses.houses.some((house) => Math.hypot(house.position.x - lot.x, house.position.z - lot.z) < 30);
       if (roadDistance < 14 || nearHouse) return;
-      const building = buildBuilding(this.scene, lot, index);
+      const building = buildBuilding(this.root, lot, index);
       this.buildings.push(building);
       this.colliders.push({ x: lot.x, z: lot.z, halfWidth: lot.width / 2 + .7, halfDepth: lot.depth / 2 + .7 });
     });
