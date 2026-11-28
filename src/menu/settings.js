@@ -3,10 +3,10 @@ const STORAGE_KEY = 'ezid-russia-settings-v1';
 export const DEFAULT_SETTINGS = Object.freeze({
   textureQuality: 'high',
   grassQuality: 'high',
-  shadowQuality: 'high',
+  shadowQuality: 'medium',
   drawDistance: 'high',
   lightingQuality: 'high',
-  resolution: '125',
+  resolution: '100',
   fpsLimit: '60',
   antialias: true,
   masterVolume: 80,

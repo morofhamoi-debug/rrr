@@ -17,13 +17,21 @@ game.setStateListener((state) => {
   document.querySelector('#hud').classList.toggle('is-hidden', state !== 'playing');
 });
 document.querySelector('#hud-menu').addEventListener('click', () => game.openMenu());
+document.querySelector('#interaction-button').addEventListener('click', () => game.interact());
 document.addEventListener('keydown', (event) => {
   if (event.code === 'Escape' && game.isPlaying()) {
     event.preventDefault();
     game.openMenu();
   }
   if (event.code === 'KeyT' && game.isPlaying()) game.world.advanceTime(1.5);
+  if (event.code === 'KeyE' && !event.repeat && game.isPlaying()) game.interact();
 });
 await game.init(settings.get());
 game.run();
 window.__EZID_RUSSIA__ = { game, settings, touchControls };
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch((error) => console.warn('Offline mode is unavailable:', error));
+  });
+}

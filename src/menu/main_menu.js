@@ -17,7 +17,7 @@ export class MainMenu {
       '<header class="menu-topline">',
       '<div class="menu-wordmark">EZID<span>®</span></div>',
       '<div class="topline-copy">RUSSIA <i>—</i> ROLEPLAY WORLD</div>',
-      '<div class="version-tag">EARLY ACCESS <b>0.1.0</b></div>',
+      '<div class="version-tag">PLAYABLE PROTOTYPE <b>0.2.0</b></div>',
       '</header>',
       '<div class="menu-main">',
       '<section class="menu-copy">',
@@ -25,7 +25,7 @@ export class MainMenu {
       '<div class="hero-title">EZID</div>',
       '<div class="hero-subtitle">RUSSIA ROLEPLAY</div>',
       '<div class="hero-rule"></div>',
-      '<p>Город уже просыпается.<br>Твоя история начинается здесь.</p>',
+      '<p>Садись за руль, исследуй улицы.<br>Выполняй заказы и зарабатывай.</p>',
       '<div class="menu-player-line"><span>' + profile.name + '</span><b>' + profile.money.toLocaleString('ru-RU') + ' ₽</b></div>',
       '<nav class="main-nav">',
       '<button class="primary-menu-button" data-action="start"><span>01</span><b>Войти в город</b><i>↗</i></button>',
@@ -41,7 +41,7 @@ export class MainMenu {
       '<div class="city-road"><span></span></div><div class="art-caption">EXPLORE · WORK · LIVE</div>',
       '</aside>',
       '</div>',
-      '<footer class="menu-footer"><span>© EZID RUSSIA</span><span>OPEN WORLD ROLEPLAY <b>·</b> LOCAL BUILD</span><span>VERSION <b>0.1.0</b></span></footer>',
+      '<footer class="menu-footer"><span>© EZID RUSSIA</span><span>МОБИЛЬНЫЙ ПРОТОТИП <b>·</b> ОДИНОЧНАЯ ИГРА</span><span>VERSION <b>0.2.0</b></span></footer>',
       '</div>'
     ].join('');
     this.root.querySelectorAll('[data-action]').forEach((button) => {

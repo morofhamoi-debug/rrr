@@ -32,8 +32,9 @@ export class WorldManager {
     this.houses.init();
     this.city.init();
     this.applySettings(settings);
-    this.terrain.update({ x: 22, z: 78 });
-    this.grass.update({ x: 22, z: 78 }, 0, this.weather);
+    const spawn = { x: 137, z: 25 };
+    this.terrain.update(spawn);
+    this.grass.update(spawn, 0, this.weather);
   }
 
   heightAt(x, z) { return this.terrain.heightAt(x, z); }

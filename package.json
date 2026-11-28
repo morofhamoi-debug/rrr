@@ -1,13 +1,13 @@
 {
   "name": "ezid-russia",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "node --check src/main.js && node --check src/game.js && node --check src/core/camera.js && node --check src/world/world_manager.js && node --check src/world/city/city_manager.js && node --check src/systems/player_profile.js && node --check src/menu/main_menu.js"
+    "check": "node --check src/main.js && node --check src/game.js && node --check src/core/camera.js && node --check src/core/engine.js && node --check src/world/world_manager.js && node --check src/world/city/city_manager.js && node --check src/systems/player_profile.js && node --check src/menu/main_menu.js"
   },
   "dependencies": {
     "three": "^0.180.0"

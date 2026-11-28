@@ -312,3 +312,10 @@ button { color: inherit; }
   .profile-panel{min-height:100svh;padding:max(24px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom))}
   .profile-summary{margin:18px 0;padding:16px}
 }
+
+/* EZID RUSSIA contextual action prompt */
+.interaction-hint{position:absolute;z-index:12;left:50%;bottom:38px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;max-width:min(92vw,460px);border:1px solid rgba(241,220,184,.32);border-radius:12px;background:rgba(12,18,20,.88);color:#f3ead8;box-shadow:0 12px 34px rgba(0,0,0,.32);backdrop-filter:blur(12px)}
+.interaction-hint span{font-size:10px;letter-spacing:.07em;white-space:nowrap}
+.interaction-hint button{flex:0 0 auto;min-width:106px;min-height:40px;padding:0 14px;border:0;border-radius:8px;background:#d79566;color:#151a1b;font-size:9px;font-weight:800;letter-spacing:.08em;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.interaction-hint button:active{transform:scale(.97);background:#efb486}
+@media (hover:none) and (pointer:coarse),(max-width:760px){.interaction-hint{left:auto;right:max(15px,env(safe-area-inset-right));bottom:calc(180px + env(safe-area-inset-bottom));transform:none;flex-direction:column;align-items:stretch;gap:7px;padding:8px;max-width:142px;border-radius:13px}.interaction-hint span{font-size:8px;line-height:1.35;text-align:center;white-space:normal}.interaction-hint button{min-width:0;min-height:42px;width:100%;font-size:8px}}

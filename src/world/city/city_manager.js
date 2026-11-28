@@ -169,8 +169,28 @@ function buildCar(scene, x, z, color, angle = 0) {
     addBox(group, [.48, .2, .08], [side * .66, .82, -2.18], lamp);
     addBox(group, [.42, .2, .08], [side * .69, .82, 2.18], tail);
   }
+  group.userData.isVehicle = true;
+  group.userData.speed = 0;
   scene.add(group);
   return group;
+}
+
+function createObjectiveMarker(x, z, color) {
+  const marker = new THREE.Group();
+  marker.position.set(x, terrainHeight(x, z) + .1, z);
+  const beamMaterial = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .38, depthWrite: false });
+  const ringMaterial = new THREE.MeshBasicMaterial({ color });
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(.16, .42, 3.1, 12, 1, true), beamMaterial);
+  beam.position.y = 1.55;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.15, .085, 8, 36), ringMaterial);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = .12;
+  const core = new THREE.Mesh(new THREE.SphereGeometry(.28, 12, 10), ringMaterial);
+  core.position.y = 3.25;
+  marker.add(beam, ring, core);
+  marker.userData.ring = ring;
+  marker.userData.core = core;
+  return marker;
 }
 
 function addStreetLamp(group, x, z) {
@@ -211,6 +231,12 @@ export class CityManager {
     this.root.name = 'EZID RUSSIA — starter city';
     this.buildings = [];
     this.colliders = [];
+    this.vehicles = [];
+    this.jobStage = 'start';
+    this.jobStart = { x: 125, z: 52 };
+    this.deliveryPoint = { x: 190, z: -43 };
+    this.startMarker = null;
+    this.deliveryMarker = null;
     this.initialized = false;
   }
 
@@ -246,9 +272,39 @@ export class CityManager {
       for (const z of [-130, 15, 175]) addStreetLamp(this.root, x + 5.5, z + 5.5);
     }
     for (const [x, z] of [[148, -4], [270, 7], [350, 28]]) addTree(this.root, x, z);
-    buildCar(this.root, 145, 8, 0x52636a, Math.PI / 2);
-    buildCar(this.root, 265, 8, 0x8c3830, Math.PI / 2);
-    buildCar(this.root, 350, 24, 0xb9b9b1, Math.PI / 2);
+    this.vehicles.push(
+      { group: buildCar(this.root, 145, 24, 0x52636a, Math.PI / 2), name: 'Седан', speed: 0 },
+      { group: buildCar(this.root, 265, 8, 0x8c3830, Math.PI / 2), name: 'Купе', speed: 0 },
+      { group: buildCar(this.root, 350, 24, 0xb9b9b1, Math.PI / 2), name: 'Универсал', speed: 0 }
+    );
+
+    this.startMarker = createObjectiveMarker(this.jobStart.x, this.jobStart.z, 0xffb36b);
+    this.deliveryMarker = createObjectiveMarker(this.deliveryPoint.x, this.deliveryPoint.z, 0x79d9a1);
+    this.root.add(this.startMarker, this.deliveryMarker);
+    this.setJobStage('start');
+  }
+
+  findNearestVehicle(position, maxDistance = 10) {
+    let nearest = null;
+    let bestDistance = maxDistance;
+    for (const vehicle of this.vehicles) {
+      const distance = Math.hypot(position.x - vehicle.group.position.x, position.z - vehicle.group.position.z);
+      if (distance < bestDistance) { bestDistance = distance; nearest = vehicle; }
+    }
+    return nearest ? { ...nearest, distance: bestDistance, source: nearest } : null;
+  }
+
+  getJobAction(position) {
+    const target = this.jobStage === 'delivery' ? this.deliveryPoint : this.jobStart;
+    const distance = Math.hypot(position.x - target.x, position.z - target.z);
+    if (distance > 6.5) return null;
+    return this.jobStage === 'delivery' ? 'deliver' : 'start';
+  }
+
+  setJobStage(stage) {
+    this.jobStage = stage === 'delivery' ? 'delivery' : 'start';
+    if (this.startMarker) this.startMarker.visible = this.jobStage === 'start';
+    if (this.deliveryMarker) this.deliveryMarker.visible = this.jobStage === 'delivery';
   }
 
   resolvePosition(previous, candidate, radius = .32) {
@@ -262,7 +318,13 @@ export class CityManager {
     return candidate;
   }
 
-  update() {}
+  update(dt = 0) {
+    for (const marker of [this.startMarker, this.deliveryMarker]) {
+      if (!marker?.visible) continue;
+      marker.userData.ring.rotation.z += dt * .7;
+      marker.userData.core.position.y = 3.25 + Math.sin(performance.now() * .002) * .16;
+    }
+  }
 
   dispose() {
     this.scene.remove(this.root);
@@ -271,6 +333,9 @@ export class CityManager {
     });
     this.buildings.length = 0;
     this.colliders.length = 0;
+    this.vehicles.length = 0;
+    this.startMarker = null;
+    this.deliveryMarker = null;
     this.initialized = false;
   }
 }

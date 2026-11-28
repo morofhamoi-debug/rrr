@@ -65,4 +65,18 @@ export class PlayerProfile {
     this.value.money += Math.floor(value);
     return this.persist();
   }
+
+  addExperience(amount) {
+    const value = Number(amount);
+    if (!Number.isFinite(value) || value <= 0) return false;
+    this.value.experience += Math.floor(value);
+    let levelUp = false;
+    while (this.value.experience >= this.value.level * 500) {
+      this.value.experience -= this.value.level * 500;
+      this.value.level += 1;
+      levelUp = true;
+    }
+    this.persist();
+    return levelUp;
+  }
 }

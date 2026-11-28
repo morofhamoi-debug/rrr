@@ -1,41 +1,48 @@
-# EZID RUSSIA — локальный прототип
+# EZID RUSSIA — playable browser prototype
 
-EZID RUSSIA — браузерный 3D-прототип мобильной roleplay-игры на Three.js. Сейчас это ранняя одиночная сборка для проверки управления, окружения и базовой структуры проекта. Это ещё не полноценная онлайн-RP-игра и не APK.
+EZID RUSSIA is a small single-player 3D roleplay prototype built with Three.js and Vite. It runs in a modern Android browser and can be added to the home screen as a web app. It is not a native APK and does not yet include online multiplayer.
 
-## Текущая основа
+## Play online
 
-- Three.js + Vite.
-- Процедурный ландшафт, дороги, погода, освещение и трава с чанками.
-- Камера от первого лица, ходьба, бег, сенсорный джойстик и управление обзором.
-- Два жилых дома с интерьерами и проходом через входную дверь.
-- Первый городской район EZID RUSSIA: многоэтажные фасады, витрины, локальные улицы, фонари, деревья и припаркованные автомобили.
-- Локальный профиль персонажа: имя, игровой ID и стартовый баланс. Данные хранятся в LocalStorage браузера на текущем устройстве.
-- Настройки графики, звука и интерфейса.
+After GitHub Pages deployment, open:
 
-## Локальный запуск
+https://morofhamoi-debug.github.io/rrr/
 
-Требуется Node.js 20 или новее.
+On Android, open the link in Chrome and use the browser menu → **Add to Home screen** (or **Install app**, when offered).
+
+## Start locally
+
+Requires Node.js 20+:
 
     npm install
     npm run dev
 
-Для проверки production-сборки:
+Production verification:
 
     npm run check
     npm run build
     npm run preview
 
-## Управление
+## Current playable loop
 
-На компьютере: WASD — ходьба, мышь — обзор, Shift — бег, колесо мыши — приближение, T — изменение времени суток, Esc — меню.
+- Explore a small 3D environment with a starter city district.
+- Walk and sprint using WASD or the on-screen joystick.
+- Enter and drive parked cars; exit with E or the action button.
+- Start a courier job at the orange marker and complete the delivery at the green marker.
+- Earn 2,500 in-game rubles and experience for a completed delivery.
+- Change the character name and retain the local profile, balance, job state and position in browser storage.
+- The service worker caches the application shell for repeat visits and limited offline use after the first successful load.
 
-На телефоне: виртуальный джойстик слева — движение, свайп справа — обзор, кнопки поворота — точное направление, кнопка «БЕГ» — ускорение.
+## Controls
 
-## Текущие ограничения
+**Android:** left joystick = move / throttle; swipe on the right = look around; arrow controls = turn / steer; sprint button = run; contextual action button = enter/exit car or accept/complete a courier job.
 
-- Сборка работает в браузере через WebGL; Unity-проекта и готового APK здесь пока нет.
-- Профиль и деньги пока локальные, без серверной авторизации и синхронизации.
-- Сетевой мультиплеер, NPC, полноценное управление автомобилем, задания и серверная экономика ещё не реализованы.
-- Процедурная геометрия — прототипный контент, а не готовые профессиональные 3D-модели.
-- Для дальнейшей Android-сборки потребуется отдельный этап упаковки и тестирования на реальных устройствах.
+**Desktop:** WASD = walk / drive; Shift = sprint; mouse = look; E = action / enter / exit car; T = change time of day; Esc = menu.
 
+## Important limits
+
+- This is a local single-player prototype, not a production-scale RP game.
+- Profile and game money are stored in the browser on the current device. Clearing browser data will erase them.
+- Cars have prototype arcade handling; traffic, pedestrians, police, full missions, vehicle ownership, multiplayer, backend accounts and anti-cheat are not implemented yet.
+- The rendering engine is Three.js in the browser. There is no Unity project or native APK in this branch.
+- Performance depends on the phone and browser. If the device heats up or slows down, lower graphics settings in the menu.
