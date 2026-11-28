@@ -1,17 +1,21 @@
 import { Engine } from './core/engine.js';
 import { AudioEnvironment } from './core/audio.js';
+import { PlayerProfile } from './systems/player_profile.js';
 
 export class Game {
   constructor(canvas) {
     this.engine = new Engine(canvas);
     this.world = this.engine.world;
     this.audio = new AudioEnvironment();
+    this.profile = new PlayerProfile();
     this.state = 'menu';
     this.stateListener = () => {};
     this.toastTimer = null;
     this.hudTime = document.querySelector('#hud-time');
     this.hudWeather = document.querySelector('#hud-weather');
     this.hudFps = document.querySelector('#hud-fps');
+    this.hudMoney = document.querySelector('#hud-money');
+    this.hudNickname = document.querySelector('#hud-nickname');
     this.pointerHint = document.querySelector('#pointer-hint');
     this.toastNode = document.querySelector('#toast');
     this.engine.camera.onPointerLock = (locked) => {
@@ -23,6 +27,7 @@ export class Game {
   async init(settings) {
     await this.engine.init(settings);
     this.engine.camera.restore();
+    this.updateHud({ fps: 60, wind: this.world.windSpeed });
   }
 
   run() { this.engine.start(); }
@@ -36,7 +41,7 @@ export class Game {
     this.audio.start();
     this.engine.camera.enableInput(true);
     const hint = this.engine.camera.isTouchDevice
-      ? 'Движение — джойстик слева. Свайп влево/вправо — поворот камеры. Кнопки ↶ / ↷ — поворот налево/направо. Два пальца — зум. Высота персонажа фиксирована, в дом можно войти через открытую дверь.'
+      ? 'Движение — джойстик слева. Свайп справа — обзор. Удерживайте «БЕГ» для ускорения. Исследуйте город и заходите в открытые дома.'
       : 'WASD — ходьба. Shift — бег. Мышь — обзор. Колесо — приближение.';
     this.toast(hint);
   }
@@ -51,7 +56,7 @@ export class Game {
     this.stateListener(this.state);
     document.querySelector('#menu-screen').classList.remove('is-hidden');
     document.querySelector('#hud').classList.add('is-hidden');
-    window.dispatchEvent(new CustomEvent('leonida:show-menu'));
+    window.dispatchEvent(new CustomEvent('ezid:show-menu'));
   }
 
   applySettings(settings) {
@@ -64,9 +69,12 @@ export class Game {
   updateHud(stats) {
     const time = this.engine.world.getTime();
     const h = Math.floor(time), m = Math.floor((time - h) * 60);
+    const player = this.profile.get();
     this.hudTime.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
     this.hudWeather.textContent = 'ВЕТЕР · ' + stats.wind.toFixed(1) + ' М/С';
     this.hudFps.textContent = Math.round(stats.fps) + ' FPS';
+    this.hudMoney.textContent = player.money.toLocaleString('ru-RU') + ' ₽';
+    this.hudNickname.textContent = player.name.toLocaleUpperCase('ru-RU');
   }
 
   toast(message) {

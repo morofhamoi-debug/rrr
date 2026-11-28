@@ -26,4 +26,4 @@ document.addEventListener('keydown', (event) => {
 });
 await game.init(settings.get());
 game.run();
-window.__LEONIDA__ = { game, settings, touchControls };
+window.__EZID_RUSSIA__ = { game, settings, touchControls };

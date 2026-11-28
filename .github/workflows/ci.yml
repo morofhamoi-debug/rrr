@@ -1,7 +1,7 @@
-name: LEONIDA CI
+name: EZID RUSSIA CI
 on:
   push:
-    branches: [main]
+    branches: [main, ezid-russia-dev]
   pull_request:
     branches: [main]
 jobs:

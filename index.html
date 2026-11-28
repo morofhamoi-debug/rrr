@@ -3,25 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="theme-color" content="#11160f" />
-  <meta name="description" content="LEONIDA — интерактивный открытый мир." />
+  <meta name="theme-color" content="#11161b" />
+  <meta name="description" content="EZID RUSSIA — мобильный открытый мир и ролевая игра." />
   <link rel="stylesheet" href="./style.css" />
-  <title>LEONIDA — Open World</title>
+  <title>EZID RUSSIA — Open World RP</title>
   <script type="importmap">
     {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}
   </script>
 </head>
 <body>
   <div id="app">
-    <canvas id="game-canvas" aria-label="3D-мир LEONIDA"></canvas>
+    <canvas id="game-canvas" aria-label="3D-мир EZID RUSSIA"></canvas>
     <div id="vignette"></div>
     <main id="menu-screen" class="screen-layer"><div id="menu-content"></div></main>
     <div id="loading-screen" class="loading-layer is-hidden">
-      <div class="loading-card"><div class="eyebrow">LEONIDA ENVIRONMENT SYSTEM</div><div class="loading-title">Подготовка территории</div><div class="loading-track"><span id="loading-bar"></span></div><div id="loading-label" class="loading-label">Загрузка ландшафта…</div></div>
+      <div class="loading-card"><div class="eyebrow">EZID RUSSIA · WORLD SYSTEM</div><div class="loading-title">Подготовка города</div><div class="loading-track"><span id="loading-bar"></span></div><div id="loading-label" class="loading-label">Загрузка района…</div></div>
     </div>
     <section id="hud" class="hud is-hidden" aria-live="polite">
-      <div class="hud-brand"><span class="hud-dot"></span><span>LEONIDA</span><small>FIELD RESEARCH AREA</small></div>
+      <div class="hud-brand"><span class="hud-dot"></span><span>EZID RUSSIA</span><small>ROLEPLAY WORLD</small></div>
       <div class="hud-right"><span id="hud-time">17:24</span><span id="hud-weather">ВЕТЕР · 4 М/С</span><span id="hud-fps" class="is-hidden">60 FPS</span></div>
+      <div id="hud-profile" class="hud-profile"><b id="hud-money">15 000 ₽</b><span id="hud-nickname">ИГРОК</span></div>
       <div class="hud-bottom-left"><span class="keycap">W A S D</span> движение <span class="keycap">МЫШЬ</span> обзор <span class="keycap">SHIFT</span> бег</div>
       <button id="hud-menu" class="hud-menu-button" type="button">ESC <span>МЕНЮ</span></button>
       <div id="pointer-hint" class="pointer-hint">Нажмите на мир, чтобы захватить мышь</div>

@@ -1,12 +1,12 @@
-const STORAGE_KEY = 'leonida-settings-v2';
+const STORAGE_KEY = 'ezid-russia-settings-v1';
 
 export const DEFAULT_SETTINGS = Object.freeze({
-  textureQuality: 'ultra',
-  grassQuality: 'ultra',
-  shadowQuality: 'ultra',
-  drawDistance: 'ultra',
-  lightingQuality: 'ultra',
-  resolution: '150',
+  textureQuality: 'high',
+  grassQuality: 'high',
+  shadowQuality: 'high',
+  drawDistance: 'high',
+  lightingQuality: 'high',
+  resolution: '125',
   fpsLimit: '60',
   antialias: true,
   masterVolume: 80,
@@ -31,9 +31,7 @@ function loadSettings() {
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     return { ...DEFAULT_SETTINGS, ...stored };
-  } catch {
-    return { ...DEFAULT_SETTINGS };
-  }
+  } catch { return { ...DEFAULT_SETTINGS }; }
 }
 
 export class SettingsPanel {
@@ -42,12 +40,11 @@ export class SettingsPanel {
     this.game = game;
     this.value = loadSettings();
   }
-
   get() { return { ...this.value }; }
 
   save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.value)); }
-    catch (error) { console.warn('Settings could not be saved:', error); }
+    catch (error) { console.warn('Настройки не удалось сохранить:', error); }
     this.game.applySettings(this.value);
   }
 
@@ -67,15 +64,15 @@ export class SettingsPanel {
       '<div class="settings-tabs"><button class="active" data-tab="graphics">Графика</button><button data-tab="sound">Звук</button><button data-tab="interface">Интерфейс</button><button data-tab="controls">Управление</button></div>' +
       '<div class="settings-body">' +
       '<section class="settings-group active" data-group="graphics"><h2>Качество изображения</h2>' +
-      select('textureQuality','Качество текстур','Детализация процедурных PBR-карт и рельефа') +
-      select('grassQuality','Качество травы','Плотность травяных инстансов и дальность') +
-      select('shadowQuality','Качество теней','Разрешение теневой карты источника света') +
+      select('textureQuality','Качество текстур','Детализация процедурных материалов и рельефа') +
+      select('grassQuality','Качество травы','Плотность травы и дальность прорисовки') +
+      select('shadowQuality','Качество теней','Разрешение теневой карты') +
       select('drawDistance','Дальность прорисовки','Радиус и уровни детализации чанков') +
-      select('lightingQuality','Качество освещения','Интенсивность и цветовая модель окружения') +
+      select('lightingQuality','Качество освещения','Качество освещения и цветовая модель') +
       select('resolution','Масштаб рендеринга','Внутреннее разрешение относительно экрана') +
       select('fpsLimit','Ограничение FPS','Частота кадров для охлаждения и стабильности') +
       toggle('antialias','Сглаживание','Сглаживание краёв геометрии') +
-      '<div class="setting-note"><b>ULTRA PROFILE</b> — максимальная детализация процедурных материалов, травы, чанков и теней. На смартфонах разрешение теней и рендеринга автоматически ограничивается, чтобы уменьшить перегрев и просадки FPS. Сглаживание задаётся при создании WebGL-контекста и меняется после перезагрузки.</div>' +
+      '<div class="setting-note"><b>ПРОФИЛЬ ГРАФИКИ</b> — на смартфонах рекомендуется среднее или высокое качество. Ультра-профиль повышает нагрев и расход батареи; фактическая частота кадров зависит от устройства.</div>' +
       '</section>' +
       '<section class="settings-group" data-group="sound"><h2>Звуковая среда</h2>' +
       range('masterVolume','Общая громкость','Главный уровень звука') +
@@ -86,7 +83,7 @@ export class SettingsPanel {
       toggle('showFPS','Отображать FPS','Счётчик частоты кадров в игре') + '</section>' +
       '<section class="settings-group" data-group="controls"><h2>Камера и сенсорное управление</h2>' +
       range('cameraSensitivity','Чувствительность камеры','Скорость поворота мышью и свайпом',5,60,1) +
-      '<div class="setting-note"><b>СЕНСОРНЫЙ ЭКРАН</b><br>Левый виртуальный джойстик — движение. Свайп влево поворачивает камеру влево, свайп вправо — вправо. Кнопки ↶ / ↷ справа — точный поворот налево и направо. Высота персонажа фиксирована. Удерживайте «БЕГ» для ускорения. Подойдите к открытой двери, чтобы войти в дом.</div>' +
+      '<div class="setting-note"><b>СЕНСОРНЫЙ ЭКРАН</b><br>Левый виртуальный джойстик — движение. Свайп вправо — обзор. Кнопки ↶ / ↷ — поворот. Удерживайте «БЕГ» для ускорения.</div>' +
       '<div class="setting-note"><b>КЛАВИАТУРА</b><br>WASD — движение · Мышь — обзор · Колесо — приближение · Shift — бег · T — время суток.</div>' +
       '</section></div>' +
       '<footer class="settings-footer"><span>Изменения применяются автоматически и сохраняются на устройстве.</span><button id="settings-reset" class="text-button">Сбросить по умолчанию</button></footer></section>';
